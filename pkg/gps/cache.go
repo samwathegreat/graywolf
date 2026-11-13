@@ -11,6 +11,7 @@ import (
 
 // Fix is a single GPS observation. Zero Timestamp indicates "no fix yet".
 type Fix struct {
+	epochSource string  // independent position epoch stream (e.g. NMEA RMC vs GGA)
 	Latitude   float64   // degrees, north positive
 	Longitude  float64   // degrees, east positive
 	Altitude   float64   // metres above MSL
@@ -76,6 +77,7 @@ type MemCache struct {
 	mu    sync.RWMutex
 	fix   Fix
 	valid bool
+	epochs map[string]time.Time
 
 	satMu    sync.RWMutex
 	satView  SatelliteView
@@ -99,16 +101,16 @@ func (c *MemCache) Update(f Fix) {
 		f.Timestamp = time.Now().UTC()
 	}
 	c.mu.Lock()
-	// Repeated copies of the same GNSS epoch must not refresh stale data.
-	// One initial sample could be gpsd replaying its cached TPV on WATCH.
-	// Require a second, advancing epoch before claiming live updates.
-	f.ReceivedAt = time.Time{}
-	if c.valid {
+	// A first report can be a cached TPV replay. Require advancement within
+	// one position stream; RMC and GGA dates can differ before clock sync.
+	if c.epochs == nil {
+		c.epochs = make(map[string]time.Time)
+	}
 		f.ReceivedAt = c.fix.ReceivedAt
-		if f.Timestamp.After(c.fix.Timestamp) {
+	if epoch, seen := c.epochs[f.epochSource]; seen && f.Timestamp.After(epoch) {
 			f.ReceivedAt = time.Now()
 		}
-	}
+	c.epochs[f.epochSource] = f.Timestamp
 	c.fix = f
 	c.valid = true
 	c.mu.Unlock()

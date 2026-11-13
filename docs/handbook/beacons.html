@@ -562,11 +562,15 @@
       position updates. The setting applies to RF and APRS-IS tracker sends only;
       fixed-position, object and custom beacons are unchanged.</p>
     <p><strong>Maximum GPS age</strong> defaults to 30 seconds and accepts 1&ndash;3600
-      seconds. Freshness uses local receipt time of advancing position epochs, so it
+      seconds. This works with gpsd, direct serial/USB NMEA, TCP NMEA and Android
+      location updates through the shared GPS cache. Freshness uses local receipt
+      time of advancing position epochs, so it
       does not require a synchronized UTC system clock. At startup, two advancing
       epochs are required: a single possibly cached report is insufficient. Repeated
       timestamps and satellite/course-only updates do not refresh position age.
-      Normal GPS reporting intervals should be shorter than the chosen age limit.</p>
+      Normal GPS reporting intervals should be comfortably shorter than the chosen
+      age limit. The configured fixed-position source refreshes every 30 seconds;
+      if using it with a tracker, choose a limit longer than that interval.</p>
     <p>Scheduled suppression logs its reason once per transition; manual sends
       return a descriptive error. Suppressed attempts do not advance the scheduled
       last-send time. While suppressed, the scheduler checks for fresh updates and
