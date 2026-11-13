@@ -99,7 +99,7 @@
     position_format: 'compressed', ambiguity: 0,
     pos_source: 'gps', latitude: '', longitude: '', alt_ft: '',
     comment: '', interval: '600', slot: '', send_path: 'rf', enabled: true,
-    smart_beacon: false,
+    smart_beacon: false, require_fresh_gps: false, gps_max_age_seconds: 30,
   });
 
   let callsignError = $state('');
@@ -320,6 +320,7 @@
     form.send_path = channels.length === 0 ? 'is_only' : 'rf';
     form.enabled = true;
     form.smart_beacon = false;
+    form.require_fresh_gps=false;form.gps_max_age_seconds=30;
     modalOpen = true;
   }
 
@@ -335,6 +336,8 @@
     // on the RadioGroup picks up the new value reliably.
     Object.assign(form, row, {
       type: row.type || 'position',
+      require_fresh_gps:row.require_fresh_gps??false,
+      gps_max_age_seconds:row.gps_max_age_seconds||30,
       object_name: row.object_name || '',
       channel: String(row.channel),
       callsign: rowCall,
@@ -449,6 +452,8 @@
       channel: channelId,
       use_gps: useGps,
       smart_beacon: smartBeaconFlag,
+      require_fresh_gps: form.require_fresh_gps,
+      gps_max_age_seconds: Number(form.gps_max_age_seconds),
       interval: parseInt(form.interval),
       slot_seconds: slotSeconds,
       latitude: lat,
@@ -978,6 +983,16 @@
           </div>
         </FormField>
       {/if}
+      {#if isTracker}
+        <Toggle bind:checked={form.require_fresh_gps} label="Suppress tracker beacons when GPS position is stale" />
+        <p class="hint">Off by default: keep transmitting the last known fix. When enabled, scheduled and manual sends require advancing GPS position updates within the age limit. Fresh updates resume scheduled beaconing automatically.</p>
+        {#if form.require_fresh_gps}
+          <FormField label="Maximum GPS age (seconds)" id="bcn-gps-max-age" hint="Default 30 seconds. Applies to RF and APRS-IS tracker sends only.">
+            <Input id="bcn-gps-max-age" type="number" min="1" max="3600" required bind:value={form.gps_max_age_seconds} />
+          </FormField>
+        {/if}
+      {/if}
+
       <FormField label="Interval (seconds)" id="bcn-interval">
         <Input id="bcn-interval" bind:value={form.interval} type="number" placeholder="600" />
       </FormField>
