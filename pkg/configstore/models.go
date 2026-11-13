@@ -312,7 +312,7 @@ type DigipeaterConfig struct {
 	ID                  uint32    `gorm:"primaryKey;autoIncrement" json:"id"`
 	Enabled             bool      `gorm:"not null;default:false" json:"enabled"`
 	DedupeWindowSeconds uint32    `gorm:"not null;default:30" json:"dedupe_window_seconds"`
-	MyCall              string    `gorm:"not null;default:'N0CALL'" json:"my_call"` // local callsign used for preemptive digi
+	MyCall              string    `gorm:"not null;default:''" json:"my_call"` // empty inherits StationConfig; non-empty overrides
 	CreatedAt           time.Time `json:"-"`
 	UpdatedAt           time.Time `json:"-"`
 }

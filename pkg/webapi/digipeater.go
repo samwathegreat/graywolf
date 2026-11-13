@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/chrissnell/graywolf/pkg/callsign"
 	"github.com/chrissnell/graywolf/pkg/configstore"
 	"github.com/chrissnell/graywolf/pkg/digipeater/blocklist"
 	"github.com/chrissnell/graywolf/pkg/webapi/dto"
@@ -97,6 +98,13 @@ func (s *Server) updateDigipeaterConfig(w http.ResponseWriter, r *http.Request) 
 		existing = *existingPtr
 	}
 	m := req.ApplyToModel(existing)
+	// The station guard above does not validate a per-digipeater override.
+	// A stored or requested placeholder otherwise saves as enabled while
+	// runtime callsign resolution disables the engine on reload.
+	if m.Enabled && callsign.IsN0Call(m.MyCall) {
+		badRequest(w, "digipeater callsign override is N0CALL; inherit the station callsign or enter a valid override")
+		return
+	}
 	if err := s.store.UpsertDigipeaterConfig(ctx, &m); err != nil {
 		s.internalError(w, r, "upsert digipeater config", err)
 		return
