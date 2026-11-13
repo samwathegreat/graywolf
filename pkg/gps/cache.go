@@ -21,6 +21,7 @@ type Fix struct {
 	HasCourse  bool      // true if Heading is valid for this fix
 	AccuracyM  float64   // horizontal accuracy radius in metres (0 = unknown / not provided)
 	Timestamp  time.Time // UTC
+	ReceivedAt time.Time // local receipt of the last advancing fix; monotonic when available
 	FixMode    int       // 0=unknown, 1=no fix, 2=2D, 3=3D (from GSA)
 	PDOP       float64   // position dilution of precision
 	HDOP       float64   // horizontal dilution of precision
@@ -98,6 +99,16 @@ func (c *MemCache) Update(f Fix) {
 		f.Timestamp = time.Now().UTC()
 	}
 	c.mu.Lock()
+	// Repeated copies of the same GNSS epoch must not refresh stale data.
+	// One initial sample could be gpsd replaying its cached TPV on WATCH.
+	// Require a second, advancing epoch before claiming live updates.
+	f.ReceivedAt = time.Time{}
+	if c.valid {
+		f.ReceivedAt = c.fix.ReceivedAt
+		if f.Timestamp.After(c.fix.Timestamp) {
+			f.ReceivedAt = time.Now()
+		}
+	}
 	c.fix = f
 	c.valid = true
 	c.mu.Unlock()
