@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - ci/tracker-fresh-gps
   pull_request:
     branches:
       - main
