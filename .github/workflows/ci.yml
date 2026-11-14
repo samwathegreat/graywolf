@@ -179,3 +179,4 @@ jobs:
 
       - name: cargo clippy
         run: cargo clippy --workspace -- -D warnings
+# One-time tracker freshness validation
