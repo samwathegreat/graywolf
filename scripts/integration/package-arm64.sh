@@ -37,7 +37,8 @@ cp LICENSE README.md RELEASE_NOTES.md docs/combined-testing.md "$stage/archive/"
 cp "$stage/archive/BUILD.txt" "$out_dir/BUILD.txt"
 cp RELEASE_NOTES.md "$out_dir/RELEASE_NOTES.md"
 tar --sort=name --mtime="@$epoch" --owner=0 --group=0 --numeric-owner \
-  -C "$stage/archive" -cf - . | gzip -n > "$out_dir/$archive"
+  -C "$stage/archive" -cf - BUILD.txt LICENSE README.md RELEASE_NOTES.md \
+  combined-testing.md graywolf graywolf-modem | gzip -n > "$out_dir/$archive"
 git archive --format=tar --prefix="graywolf-${version}/" HEAD | gzip -n > "$out_dir/$source"
 install -m 0755 "$bin_dir/graywolf" "$bin_dir/graywolf-modem" "$stage/deb/usr/bin/"
 install -m 0644 packaging/systemd/graywolf.service "$stage/deb/usr/lib/systemd/system/"

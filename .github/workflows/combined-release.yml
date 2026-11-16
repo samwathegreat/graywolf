@@ -9,7 +9,7 @@ permissions:
 
 concurrency:
   group: combined-testing-release
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   validate-build:
