@@ -202,7 +202,7 @@ impl TxWorker {
     /// mpsc is FIFO, this also flushes every earlier message before
     /// returning — tests get a race-free barrier for free.
     #[cfg(test)]
-    pub(super) fn driver_count(&self) -> usize {
+    pub(crate) fn driver_count(&self) -> usize {
         let (tx, rx) = channel();
         self.sender
             .send(TxMessage::QueryDriverCount(tx))
@@ -231,8 +231,22 @@ fn worker_loop(rx: std::sync::mpsc::Receiver<TxMessage>, stop: Arc<AtomicBool>) 
             Ok(TxMessage::Transmit(job)) => {
                 process_job(&mut sinks, &mut drivers, &mut pending_devices, job);
             }
-            Ok(TxMessage::RegisterDriver { channel, driver }) => {
-                drivers.insert(channel, driver);
+            Ok(TxMessage::RegisterDriver {
+                channel,
+                mut driver,
+            }) => {
+                // Drop/unkey the old driver first, then restore the new
+                // serial driver's inactive levels (polarity may have changed).
+                drivers.remove(&channel);
+                match driver.on_registered() {
+                    Ok(()) => {
+                        drivers.insert(channel, driver);
+                    }
+                    Err(e) => eprintln!(
+                        "graywolf-modem: PTT registration channel={}: {}",
+                        channel, e
+                    ),
+                }
             }
             Ok(TxMessage::ReleaseDriver { channel }) => {
                 drivers.remove(&channel);
@@ -577,6 +591,28 @@ mod tests {
 
         assert_eq!(*ptt_log.lock().unwrap(), vec![PttCall::Key, PttCall::Unkey]);
         assert_eq!(*sink_log.lock().unwrap(), vec![100]);
+    }
+
+    #[test]
+    fn fx25_ptt_cycle_waits_for_full_parity_airtime() {
+        let samples =
+            crate::tx::build_fx25_samples(&vec![0; 235], 0, 0, 48000, 1200, 1200, 2200).unwrap();
+        let n = samples.len();
+        let expected = Duration::from_nanos(n as u64 * 1_000_000_000 / 48000);
+        let mut ptt = MockPtt::default();
+        let log = ptt.log.clone();
+        let sink = InstantDrainSink::new();
+        let start = Instant::now();
+        assert!(matches!(
+            drive_tx_cycle(&mut ptt, &sink, samples, 48000),
+            TxCycleOutcome::Done
+        ));
+        assert!(
+            start.elapsed() >= expected,
+            "PTT released before parity finished"
+        );
+        assert_eq!(*sink.submit_log.lock().unwrap(), vec![n]);
+        assert_eq!(*log.lock().unwrap(), vec![PttCall::Key, PttCall::Unkey]);
     }
 
     #[test]

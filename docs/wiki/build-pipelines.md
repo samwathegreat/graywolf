@@ -127,3 +127,14 @@ Wiki-side notes:
 3. Retag contract: if CI fails after the tag is pushed, delete and
    re-tag the same version; do not rewrite the release note. See
    [invariant 5](invariants.md).
+
+## Fork combined-testing release
+
+The fork-only `.github/workflows/combined-release.yml` validates and builds
+Linux ARM64 on `integration/combined-testing`. `INTEGRATION_VERSION` stamps
+both binaries without changing upstream VERSION.
+`scripts/integration/package-arm64.sh` creates the standard tarball, Debian
+package, exact source archive and checksums. Release publication is guarded
+to `samwathegreat/graywolf`; no upstream Docker or multi-platform release
+workflow is invoked. [Combined provenance](../combined-testing.md) records
+selected PR heads, merge repairs, install scope and pending physical checks.

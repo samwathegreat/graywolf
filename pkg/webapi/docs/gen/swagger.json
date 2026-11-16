@@ -9250,11 +9250,17 @@
                 "gain": {
                     "type": "integer"
                 },
+                "gps_max_age_seconds": {
+                    "type": "integer"
+                },
                 "height": {
                     "type": "integer"
                 },
                 "interval": {
                     "type": "integer"
+                },
+                "label": {
+                    "type": "string"
                 },
                 "latitude": {
                     "type": "number"
@@ -9279,6 +9285,9 @@
                 },
                 "power": {
                     "type": "integer"
+                },
+                "require_fresh_gps": {
+                    "type": "boolean"
                 },
                 "sb_fast_rate": {
                     "type": "integer"
@@ -9378,6 +9387,9 @@
                 "gain": {
                     "type": "integer"
                 },
+                "gps_max_age_seconds": {
+                    "type": "integer"
+                },
                 "height": {
                     "type": "integer"
                 },
@@ -9386,6 +9398,9 @@
                 },
                 "interval": {
                     "type": "integer"
+                },
+                "label": {
+                    "type": "string"
                 },
                 "latitude": {
                     "type": "number"
@@ -9410,6 +9425,9 @@
                 },
                 "power": {
                     "type": "integer"
+                },
+                "require_fresh_gps": {
+                    "type": "boolean"
                 },
                 "sb_fast_rate": {
                     "type": "integer"
@@ -9780,6 +9798,17 @@
                 "fx25_encode": {
                     "type": "boolean"
                 },
+                "fx25_mode": {
+                    "description": "FX25Mode selects TX mode: auto (recommended), 16, 32, or 64 parity bytes. RX remains automatic.",
+                    "type": "string",
+                    "default": "auto",
+                    "enum": [
+                        "auto",
+                        "16",
+                        "32",
+                        "64"
+                    ]
+                },
                 "il2p_encode": {
                     "type": "boolean"
                 },
@@ -9842,6 +9871,17 @@
                 },
                 "fx25_encode": {
                     "type": "boolean"
+                },
+                "fx25_mode": {
+                    "description": "FX25Mode selects TX mode: auto (recommended), 16, 32, or 64 parity bytes. RX remains automatic.",
+                    "type": "string",
+                    "default": "auto",
+                    "enum": [
+                        "auto",
+                        "16",
+                        "32",
+                        "64"
+                    ]
                 },
                 "id": {
                     "type": "integer"
@@ -10387,6 +10427,9 @@
                 "channel": {
                     "type": "integer"
                 },
+                "display_name": {
+                    "type": "string"
+                },
                 "enabled": {
                     "description": "Enabled gates whether graywolf runs this interface. When false the\nmanager stops the supervisor and releases the underlying device\n(closing the fd / socket) instead of looping reconnect attempts,\nwhile the row's configuration is preserved for a later re-enable.\nA pointer so an omitted field means \"leave at the default\" (true)\nrather than \"disable\": older clients and partial callers that never\nsend the key keep their interfaces running. ToModel substitutes\ntrue when nil.",
                     "type": "boolean"
@@ -10452,6 +10495,9 @@
                 },
                 "connected_since": {
                     "type": "integer"
+                },
+                "display_name": {
+                    "type": "string"
                 },
                 "enabled": {
                     "description": "Enabled mirrors KissInterface.Enabled so the Kiss page can show a\n\"Disabled\" state and offer a re-enable action. A disabled interface\nis not running, so the live status fields below stay zero-valued\nfor it.",
@@ -10888,6 +10934,10 @@
                 "device_path": {
                     "type": "string"
                 },
+                "dtr_invert": {
+                    "description": "DtrInvert controls DTR only for serial_rts_dtr; Invert controls RTS.",
+                    "type": "boolean"
+                },
                 "dwait_ms": {
                     "type": "integer"
                 },
@@ -10925,6 +10975,10 @@
                 },
                 "device_path": {
                     "type": "string"
+                },
+                "dtr_invert": {
+                    "description": "DtrInvert controls DTR only for serial_rts_dtr; Invert controls RTS.",
+                    "type": "boolean"
                 },
                 "dwait_ms": {
                     "type": "integer"
@@ -11794,6 +11848,46 @@
                 "DirIS"
             ]
         },
+        "packetlog.FX25Reception": {
+            "type": "object",
+            "properties": {
+                "corrected_symbols": {
+                    "type": "integer"
+                },
+                "data_bytes": {
+                    "type": "integer"
+                },
+                "parity_bytes": {
+                    "type": "integer"
+                },
+                "tag": {
+                    "type": "integer"
+                }
+            }
+        },
+        "packetlog.TXEncoding": {
+            "type": "object",
+            "properties": {
+                "data_bytes": {
+                    "type": "integer"
+                },
+                "encoding": {
+                    "type": "string"
+                },
+                "fallback_reason": {
+                    "type": "string"
+                },
+                "fx25_requested": {
+                    "type": "boolean"
+                },
+                "parity_bytes": {
+                    "type": "integer"
+                },
+                "tag": {
+                    "type": "integer"
+                }
+            }
+        },
         "pttdevice.AvailableDevice": {
             "type": "object",
             "properties": {
@@ -12480,6 +12574,17 @@
                     "description": "DistanceMi is the great-circle distance from this station's GPS fix to the packet's reported position, in statute miles; omitted when either position is unavailable.",
                     "type": "number"
                 },
+                "frame_id": {
+                    "type": "integer"
+                },
+                "fx25": {
+                    "description": "FX25 is present only for native RX after RS and embedded HDLC/FCS validation.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/packetlog.FX25Reception"
+                        }
+                    ]
+                },
                 "lat": {
                     "description": "Lat/Lon are the packet's reported coordinates in decimal degrees (WGS84),\nsurfaced for any transmission type that carries a fix -- position, Mic-E,\nweather-with-position, object, and item alike. Omitted for positionless\npackets (messages, telemetry, status). The web UI uses these to render the\nclick-to-zoom map reticle on a log entry; unlike DistanceMi they do not\ndepend on the local station having its own GPS fix.",
                     "type": "number"
@@ -12505,6 +12610,14 @@
                 "timestamp": {
                     "description": "Timestamp is the UTC RFC3339 time the packet was recorded.",
                     "type": "string"
+                },
+                "tx_encoding": {
+                    "description": "TXEncoding is the native modem's actual encoding, not inferred configuration.\nIt reports local encoding/queueing, not physical transmission or reception.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/packetlog.TXEncoding"
+                        }
+                    ]
                 },
                 "type": {
                     "description": "Type is the APRS packet type (position, message, status, ...) when the payload decoded successfully.",

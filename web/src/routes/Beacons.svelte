@@ -92,14 +92,15 @@
   // openEdit's Object.assign still covers the full form snapshot and
   // we don't need a parallel lifecycle for the checkbox.
   let form = $state({
-    type: 'position', object_name: '',
+    type: 'position', object_name: '', label: '',
     channel: '', callsign: '', callsign_override: false,
     destination: 'APGRWO', path: 'WIDE1-1,WIDE2-1',
     symbol_table: '/', symbol: '-', overlay: '',
+    require_fresh_gps: false, gps_max_age_seconds: 30,
     position_format: 'compressed', ambiguity: 0,
     pos_source: 'gps', latitude: '', longitude: '', alt_ft: '',
     comment: '', interval: '600', slot: '', send_path: 'rf', enabled: true,
-    smart_beacon: false,
+    smart_beacon: false, comment_cmd: '',
   });
 
   let callsignError = $state('');
@@ -288,6 +289,7 @@
   function openCreate() {
     editing = null;
     form.type = 'position';
+    form.label = '';
     form.object_name = '';
     // A radioless (APRS-IS-only) station has no channels at all. Rather
     // than block beacon creation, default to an APRS-IS-only beacon so
@@ -315,11 +317,13 @@
     altInput = '';
     altError = '';
     form.comment = defaultComment;
+    form.comment_cmd = '';
     form.interval = '600';
     form.slot = '';
     form.send_path = channels.length === 0 ? 'is_only' : 'rf';
     form.enabled = true;
     form.smart_beacon = false;
+    form.require_fresh_gps=false;form.gps_max_age_seconds=30;
     modalOpen = true;
   }
 
@@ -335,6 +339,7 @@
     // on the RadioGroup picks up the new value reliably.
     Object.assign(form, row, {
       type: row.type || 'position',
+      label: row.label || '',
       object_name: row.object_name || '',
       channel: String(row.channel),
       callsign: rowCall,
@@ -346,6 +351,8 @@
       send_path: row.send_path || 'rf',
       ambiguity: row.ambiguity ?? 0,
       pos_source: row.use_gps ? 'gps' : 'fixed',
+      require_fresh_gps:row.require_fresh_gps??false,
+      gps_max_age_seconds:row.gps_max_age_seconds||30,
       latitude: row.latitude != null ? String(row.latitude) : '',
       longitude: row.longitude != null ? String(row.longitude) : '',
       alt_ft: row.alt_ft != null ? String(row.alt_ft) : '',
@@ -445,10 +452,13 @@
     }
     const data = {
       ...form,
+      label: form.label.trim(),
       callsign: callsignToSend,
       channel: channelId,
       use_gps: useGps,
       smart_beacon: smartBeaconFlag,
+      require_fresh_gps: form.require_fresh_gps,
+      gps_max_age_seconds: Number(form.gps_max_age_seconds),
       interval: parseInt(form.interval),
       slot_seconds: slotSeconds,
       latitude: lat,
@@ -547,7 +557,7 @@
   async function handleSendNow(row) {
     try {
       await api.post(`/beacons/${row.id}/send`, {});
-      toasts.success(`Beacon sent: ${beaconLabel(row, stationCallsign)}`);
+      toasts.success(`Beacon queued: ${beaconLabel(row, stationCallsign)}`);
     } catch (err) {
       toasts.error(err.message);
     }
@@ -625,6 +635,10 @@
                 <span class="symbol-swatch-overlay">{b.overlay}</span>
               {/if}
             </span>
+            {#if b.label?.trim()}
+              <span class="beacon-callsign">{b.label.trim()}</span>
+              <span class="beacon-callsign-inherited">({b.type === 'object' && b.object_name ? b.object_name : (b.callsign || stationCallsign || 'unset')})</span>
+            {:else}
             {#if b.type === 'object' && b.object_name}
               <span class="beacon-callsign">{b.object_name}</span>
               <span class="beacon-callsign-inherited">via {b.callsign || stationCallsign || '(not set)'}</span>
@@ -635,6 +649,7 @@
               <span class="beacon-callsign-inherited">(inherited)</span>
             {:else}
               <a href="#/callsign" class="beacon-callsign beacon-callsign-unset">(Callsign not set)</a>
+            {/if}
             {/if}
           </div>
           <div class="beacon-badges">
@@ -704,6 +719,12 @@
             <div class="detail-row">
               <span class="detail-label">Comment</span>
               <span class="detail-value detail-comment">{b.comment}</span>
+            </div>
+          {/if}
+          {#if b.comment_cmd}
+            <div class="detail-row">
+              <span class="detail-label">Comment Command</span>
+              <span class="detail-value detail-comment">{b.comment_cmd}</span>
             </div>
           {/if}
         </div>
@@ -787,6 +808,10 @@
       <div style="margin-bottom: 12px;">
         <Toggle bind:checked={form.enabled} label="Enabled" />
       </div>
+      <FormField label="Display label (optional)" id="bcn-label"
+        hint="An internal name to distinguish beacons. Not transmitted in APRS packets.">
+        <Input id="bcn-label" bind:value={form.label} placeholder="e.g. RF Direct / 10 minutes" maxlength="80" />
+      </FormField>
       <FormField label="Type" id="bcn-type">
         <RadioGroup bind:value={form.type}>
           <div class="pos-source-row">
@@ -932,6 +957,10 @@
         hint={"Tip: use {{version}} to insert the running graywolf version."}>
         <Input id="bcn-comment" bind:value={form.comment} placeholder={defaultComment} />
       </FormField>
+      <FormField label="Comment Command" id="bcn-comment-cmd"
+        hint={"This command will be executed during beaconing. The standard output will be appended to the comment specified above."}>
+        <Input id="bcn-comment-cmd" bind:value={form.comment_cmd} />
+      </FormField>
     </div>
 
     <div class="beacon-form-col">
@@ -978,6 +1007,16 @@
           </div>
         </FormField>
       {/if}
+      {#if isTracker}
+        <Toggle bind:checked={form.require_fresh_gps} label="Suppress tracker beacons when GPS position is stale" />
+        <p class="hint">Off by default: keep transmitting the last known fix. When enabled, scheduled and manual sends require advancing GPS position updates within the age limit. Fresh updates resume scheduled beaconing automatically.</p>
+        {#if form.require_fresh_gps}
+          <FormField label="Maximum GPS age (seconds)" id="bcn-gps-max-age" hint="Default 30 seconds. Applies to RF and APRS-IS tracker sends only.">
+            <Input id="bcn-gps-max-age" type="number" min="1" max="3600" required bind:value={form.gps_max_age_seconds} />
+          </FormField>
+        {/if}
+      {/if}
+
       <FormField label="Interval (seconds)" id="bcn-interval">
         <Input id="bcn-interval" bind:value={form.interval} type="number" placeholder="600" />
       </FormField>

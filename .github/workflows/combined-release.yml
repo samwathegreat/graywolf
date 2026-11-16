@@ -1,0 +1,114 @@
+name: Combined testing ARM64 release
+
+on:
+  push:
+    branches: [integration/combined-testing]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: combined-testing-release
+  cancel-in-progress: false
+
+jobs:
+  validate-build:
+    if: github.repository == 'samwathegreat/graywolf'
+    runs-on: ubuntu-24.04-arm
+    container: debian:bookworm
+    timeout-minutes: 45
+    steps:
+      - name: Install native Bookworm build tools
+        run: |
+          apt-get update
+          apt-get install -y git ca-certificates curl build-essential pkg-config libasound2-dev protobuf-compiler cmake python3 xz-utils zstd gh jq
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Stamp paired components
+        run: |
+          echo "GRAYWOLF_VERSION=$(cat INTEGRATION_VERSION)" >> "$GITHUB_ENV"
+          echo "GRAYWOLF_GIT_COMMIT=$(git rev-parse HEAD | cut -c1-8)" >> "$GITHUB_ENV"
+      - name: Web tests, API client check and production build
+        working-directory: web
+        run: |
+          npm ci
+          npm test
+          npm run api:check
+          npm run build
+      - name: Generated API and Go regression checks
+        run: |
+          mkdir -p scratch/bin
+          GOBIN="$(pwd)/scratch/bin" go install github.com/swaggo/swag/cmd/swag@v1.16.4
+          make docs-check docs-lint api-client-check
+          cmp pkg/webapi/docs/gen/swagger.json docs/handbook/openapi.json
+          cmp pkg/webapi/docs/gen/swagger.yaml docs/handbook/openapi.yaml
+          go vet ./...
+          GOOS=linux GOARCH=arm GOARM=6 go vet ./...
+          go test -race ./...
+      - name: Modem and serial PTT regression checks
+        run: |
+          cargo check --workspace --locked
+          cargo clippy --workspace --locked -- -D warnings
+          cargo test --release --locked --lib fx25
+          cargo test --release --locked --lib il2p
+          cargo test --release --locked --lib ptt
+          cargo build --release --locked --bin graywolf-modem --example fx25_audio
+          bash scripts/test_serial_ptt_sim.sh
+      - name: Independent pinned Dire Wolf interoperability
+        run: |
+          git clone https://github.com/wb2osz/direwolf.git /tmp/direwolf-reference
+          git -C /tmp/direwolf-reference checkout --detach eda1383f5fa9d8ba3cb27f99db1d2c79494404c9
+          cmake -S /tmp/direwolf-reference -B /tmp/direwolf-reference/build
+          cmake --build /tmp/direwolf-reference/build --target gen_packets atest -j2
+          GRAYWOLF_FX25_TOOL="$PWD/target/release/examples/fx25_audio" python3 scripts/fx25/interop.py /tmp/direwolf-reference
+      - name: Build and verify paired ARM64 application
+        env:
+          CGO_ENABLED: '0'
+        run: |
+          mkdir -p bin
+          cp target/release/graywolf-modem bin/
+          go build -trimpath -buildvcs=false -ldflags="-s -w -X main.Version=$GRAYWOLF_VERSION -X main.GitCommit=$GRAYWOLF_GIT_COMMIT" -o bin/graywolf ./cmd/graywolf
+          bin/graywolf version | tee /tmp/go-version.txt
+          bin/graywolf-modem --version | tee /tmp/modem-version.txt
+          grep -F "v$GRAYWOLF_VERSION-$GRAYWOLF_GIT_COMMIT" /tmp/go-version.txt
+          grep -F "v$GRAYWOLF_VERSION-$GRAYWOLF_GIT_COMMIT" /tmp/modem-version.txt
+          scripts/integration/package-arm64.sh bin dist-combined
+          dpkg-deb --info dist-combined/*.deb
+          dpkg-deb --contents dist-combined/*.deb
+          git diff --exit-code
+      - uses: actions/upload-artifact@v5
+        with:
+          name: combined-linux-arm64
+          path: dist-combined/
+          retention-days: 14
+
+  publish:
+    if: github.repository == 'samwathegreat/graywolf'
+    needs: validate-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          name: combined-linux-arm64
+          path: dist-combined
+      - name: Publish complete fork test release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="v$(cat INTEGRATION_VERSION)"
+          # Build a draft first, then expose the complete asset set via latest.
+          gh release create "$tag" dist-combined/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --draft --title "Graywolf $(cat INTEGRATION_VERSION) - combined testing (Linux ARM64)" --notes-file RELEASE_NOTES.md
+          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --latest

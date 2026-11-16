@@ -2465,8 +2465,10 @@ export interface components {
             freq?: string;
             freq_offset?: string;
             gain?: number;
+            gps_max_age_seconds?: number;
             height?: number;
             interval?: number;
+            label?: string;
             latitude?: number;
             longitude?: number;
             messaging?: boolean;
@@ -2475,6 +2477,7 @@ export interface components {
             path?: string;
             position_format?: string;
             power?: number;
+            require_fresh_gps?: boolean;
             sb_fast_rate?: number;
             sb_fast_speed?: number;
             sb_min_turn_time?: number;
@@ -2510,9 +2513,11 @@ export interface components {
             freq?: string;
             freq_offset?: string;
             gain?: number;
+            gps_max_age_seconds?: number;
             height?: number;
             id?: number;
             interval?: number;
+            label?: string;
             latitude?: number;
             longitude?: number;
             messaging?: boolean;
@@ -2521,6 +2526,7 @@ export interface components {
             path?: string;
             position_format?: string;
             power?: number;
+            require_fresh_gps?: boolean;
             sb_fast_rate?: number;
             sb_fast_speed?: number;
             sb_min_turn_time?: number;
@@ -2658,6 +2664,12 @@ export interface components {
             enabled?: boolean;
             fix_bits?: string;
             fx25_encode?: boolean;
+            /**
+             * @description FX25Mode selects TX mode: auto (recommended), 16, 32, or 64 parity bytes. RX remains automatic.
+             * @default auto
+             * @enum {string}
+             */
+            fx25_mode: "auto" | "16" | "32" | "64";
             il2p_encode?: boolean;
             input_channel?: number;
             input_device_id?: number;
@@ -2688,6 +2700,12 @@ export interface components {
             enabled?: boolean;
             fix_bits?: string;
             fx25_encode?: boolean;
+            /**
+             * @description FX25Mode selects TX mode: auto (recommended), 16, 32, or 64 parity bytes. RX remains automatic.
+             * @default auto
+             * @enum {string}
+             */
+            fx25_mode: "auto" | "16" | "32" | "64";
             id?: number;
             il2p_encode?: boolean;
             input_channel?: number;
@@ -2907,6 +2925,7 @@ export interface components {
             allow_tx_from_governor?: boolean;
             baud_rate?: number;
             channel?: number;
+            display_name?: string;
             /**
              * @description Enabled gates whether graywolf runs this interface. When false the
              *     manager stops the supervisor and releases the underlying device
@@ -2962,6 +2981,7 @@ export interface components {
             baud_rate?: number;
             channel?: number;
             connected_since?: number;
+            display_name?: string;
             /**
              * @description Enabled mirrors KissInterface.Enabled so the Kiss page can show a
              *     "Disabled" state and offer a re-enable action. A disabled interface
@@ -3166,6 +3186,8 @@ export interface components {
         "dto.PttRequest": {
             channel_id?: number;
             device_path?: string;
+            /** @description DtrInvert controls DTR only for serial_rts_dtr; Invert controls RTS. */
+            dtr_invert?: boolean;
             dwait_ms?: number;
             /**
              * @description GpioLine is the gpiochip v2 line offset (0-indexed) used by the `gpio`
@@ -3190,6 +3212,8 @@ export interface components {
         "dto.PttResponse": {
             channel_id?: number;
             device_path?: string;
+            /** @description DtrInvert controls DTR only for serial_rts_dtr; Invert controls RTS. */
+            dtr_invert?: boolean;
             dwait_ms?: number;
             /**
              * @description GpioLine is the gpiochip v2 line offset (0-indexed) used by the `gpio`
@@ -3632,6 +3656,20 @@ export interface components {
         };
         /** @enum {string} */
         "packetlog.Direction": "RX" | "TX" | "IS";
+        "packetlog.FX25Reception": {
+            corrected_symbols?: number;
+            data_bytes?: number;
+            parity_bytes?: number;
+            tag?: number;
+        };
+        "packetlog.TXEncoding": {
+            data_bytes?: number;
+            encoding?: string;
+            fallback_reason?: string;
+            fx25_requested?: boolean;
+            parity_bytes?: number;
+            tag?: number;
+        };
         "pttdevice.AvailableDevice": {
             /** @description human-friendly label (USB product, GPIO chip) */
             description?: string;
@@ -3937,6 +3975,9 @@ export interface components {
             display?: string;
             /** @description DistanceMi is the great-circle distance from this station's GPS fix to the packet's reported position, in statute miles; omitted when either position is unavailable. */
             distance_mi?: number;
+            frame_id?: number;
+            /** @description FX25 is present only for native RX after RS and embedded HDLC/FCS validation. */
+            fx25?: components["schemas"]["packetlog.FX25Reception"];
             /**
              * @description Lat/Lon are the packet's reported coordinates in decimal degrees (WGS84),
              *     surfaced for any transmission type that carries a fix -- position, Mic-E,
@@ -3955,6 +3996,11 @@ export interface components {
             source?: string;
             /** @description Timestamp is the UTC RFC3339 time the packet was recorded. */
             timestamp?: string;
+            /**
+             * @description TXEncoding is the native modem's actual encoding, not inferred configuration.
+             *     It reports local encoding/queueing, not physical transmission or reception.
+             */
+            tx_encoding?: components["schemas"]["packetlog.TXEncoding"];
             /** @description Type is the APRS packet type (position, message, status, ...) when the payload decoded successfully. */
             type?: string;
             /** @description Via is the callsign of the last digipeater that forwarded this packet (H-bit set); empty string for direct packets. */

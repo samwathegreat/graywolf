@@ -71,6 +71,7 @@ type Channel struct {
 	Profile        string       `gorm:"not null;default:'A'" json:"profile"`
 	NumSlicers     uint32       `gorm:"not null;default:1" json:"num_slicers"`
 	FixBits        string       `gorm:"not null;default:'none'" json:"fix_bits"` // none|single|double
+	FX25Mode       string       `gorm:"not null;default:'auto'" json:"fx25_mode"`
 	FX25Encode     bool         `gorm:"not null;default:false" json:"fx25_encode"`
 	IL2PEncode     bool         `gorm:"column:il2p_encode;not null;default:false" json:"il2p_encode"`
 	NumDecoders    uint32       `gorm:"not null;default:1" json:"num_decoders"`
@@ -97,12 +98,13 @@ type PttConfig struct {
 	ID         uint32    `gorm:"primaryKey;autoIncrement" json:"id"`
 	ChannelID  uint32    `gorm:"not null;uniqueIndex" json:"channel_id"`
 	Channel    *Channel  `gorm:"foreignKey:ChannelID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE" json:"-"`
-	Method     string    `gorm:"not null;default:'none'" json:"method"` // serial_rts|serial_dtr|gpio|cm108|android|vox|digirig_tone|none
+	Method     string    `gorm:"not null;default:'none'" json:"method"` // serial_rts|serial_dtr|serial_rts_dtr|gpio|cm108|android|vox|digirig_tone|none
 	Device     string    `json:"device_path"`
-	GpioPin    uint32    `json:"gpio_pin"`                             // CM108 HID GPIO pin (1-indexed, default 3). cm108 method only.
-	PttMethod  uint32    `gorm:"not null;default:0" json:"ptt_method"` // Android transport when Method=="android": PttMethod enum 1..5 (1 CP2102N_RTS, 2 CM108_HID, 3 AIOC_CDC_DTR, 4 VOX, 5 DIGIRIG_TONE). 0 = unset / non-android.
-	GpioLine   uint32    `gorm:"not null;default:0" json:"gpio_line"`  // gpiochip method: 0-indexed line offset
-	Invert     bool      `gorm:"not null;default:false" json:"invert"` // reverse polarity for rigs wired backwards
+	GpioPin    uint32    `json:"gpio_pin"`                                 // CM108 HID GPIO pin (1-indexed, default 3). cm108 method only.
+	PttMethod  uint32    `gorm:"not null;default:0" json:"ptt_method"`     // Android transport when Method=="android": PttMethod enum 1..5 (1 CP2102N_RTS, 2 CM108_HID, 3 AIOC_CDC_DTR, 4 VOX, 5 DIGIRIG_TONE). 0 = unset / non-android.
+	GpioLine   uint32    `gorm:"not null;default:0" json:"gpio_line"`      // gpiochip method: 0-indexed line offset
+	Invert     bool      `gorm:"not null;default:false" json:"invert"`     // reverse polarity for rigs wired backwards
+	DtrInvert  bool      `gorm:"not null;default:false" json:"dtr_invert"` // serial_rts_dtr only; Invert controls RTS.
 	SlotTimeMs uint32    `gorm:"not null;default:10" json:"slot_time_ms"`
 	Persist    uint32    `gorm:"not null;default:63" json:"persist"`
 	DwaitMs    uint32    `gorm:"not null;default:0" json:"dwait_ms"`
@@ -129,6 +131,7 @@ type PttConfig struct {
 type KissInterface struct {
 	ID               uint32 `gorm:"primaryKey;autoIncrement" json:"id"`
 	Name             string `gorm:"not null;uniqueIndex" json:"name"`
+	DisplayName      string `json:"display_name"` // Optional operator-facing label; not used for runtime identity
 	InterfaceType    string `gorm:"not null;default:'tcp'" json:"type"` // tcp|tcp-client|serial|bluetooth
 	ListenAddr       string `json:"listen_addr"`                        // host:port for tcp (server-listen)
 	Device           string `json:"serial_device"`                      // /dev/ttyUSB0 or bluetooth mac
@@ -632,11 +635,14 @@ type GPSConfig struct {
 // Beacon is a scheduled beacon. Type selects the payload builder.
 type Beacon struct {
 	ID           uint32  `gorm:"primaryKey;autoIncrement" json:"id"`
+	Label        string  `gorm:"not null;default:''" json:"label"` // optional operator-facing display label; never transmitted
 	Type         string  `gorm:"not null;default:'position'" json:"type"` // position|object|tracker|custom|igate
 	Channel      uint32  `gorm:"not null;default:1" json:"channel"`
 	Callsign     string  `gorm:"not null" json:"callsign"`
 	Destination  string  `gorm:"not null;default:'APGRWO'" json:"destination"`
 	Path         string  `gorm:"not null;default:'WIDE1-1'" json:"path"`
+	RequireFreshGPS bool `gorm:"not null;default:false" json:"require_fresh_gps"`
+	GPSMaxAgeSeconds uint32 `gorm:"not null;default:0" json:"gps_max_age_seconds"` // 0 uses the scheduler default
 	UseGps       bool    `gorm:"column:use_gps;default:false" json:"use_gps"` // source lat/lon/alt from GPS cache instead of fixed fields
 	Latitude     float64 `json:"latitude"`
 	Longitude    float64 `json:"longitude"`

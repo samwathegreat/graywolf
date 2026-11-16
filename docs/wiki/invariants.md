@@ -97,6 +97,21 @@ Source: [`../../pkg/pttdevice/`](../../pkg/pttdevice/);
 [`../../proto/graywolf.proto`](../../proto/graywolf.proto)
 (`ConfigurePtt`).
 
+### 9d. Serial dual-line PTT polarity
+`serial_rts` and `serial_dtr` retain their single-line `invert` behavior.
+`serial_rts_dtr` uses the same shared port and driver, with `invert`
+controlling RTS and `dtr_invert` controlling DTR independently. The latter
+defaults false through GORM AutoMigrate and protobuf field 13. Both fields
+travel through the REST DTO and modembridge. Every enabled line is inverted
+between TX and RX. Startup, driver disposal, and failed line operations
+attempt RX on all enabled lines; a failed key never proceeds to audio.
+Unix updates both bits with one masked TIOCMSET; Windows attempts both
+EscapeCommFunction calls even if one fails.
+Linux simulation: `scripts/test_serial_ptt_sim.sh` runs the production Unix
+serial adapter against a temporary device with simulated modem-control
+ioctls, including one-shot I/O errors. It needs a C compiler and normal
+Rust build dependencies; it never accesses real serial hardware.
+
 ### 9a. PTT is one-row-per-channel; PUT supports atomic rekey
 
 *Why:* `PttConfig.ChannelID` carries a uniqueIndex, so an operator changing the channel field on an existing PTT means *move*, not copy. `PUT /api/ptt/{channel}` matches the body's `channel_id` against the URL's: same → in-place upsert; different → atomic rekey in a single GORM transaction (`Store.RekeyPttConfig`), with `ErrPttChannelTaken` mapped to HTTP 400 on collision. The bridge reload (`notifyBridgeForChannel` → `ReconfigureAudioDevice`) is global, so a single notify covers both vacated and newly-targeted channels.
@@ -236,6 +251,14 @@ Source: [`../../pkg/igate/filters/filters.go`](../../pkg/igate/filters/filters.g
 
 Source: [`../../pkg/txgovernor/governor.go`](../../pkg/txgovernor/governor.go)
 (package comment).
+
+The governor's optional `OnOutcome` observer accounts for events by source,
+without changing `Submit`'s nil-on-duplicate behavior. `forwarded` fires only
+when Sender returns nil (at least one dispatcher backend accepted the frame),
+not on deduplication, encoding failure or total backend failure. The additive
+`graywolf_tx_source_outcomes_total` metric provides these outcomes; the legacy
+`graywolf_digipeater_packets_total` remains submission accounting for compatibility.
+Observers run outside the governor mutex and must be concurrency-safe/non-blocking.
 
 ### 16b. KISS hardware-TNC types default to a TX-capable TNC link
 
@@ -2118,3 +2141,24 @@ Source: [`../../web/src/components/messages/MessageThread.svelte`](../../web/src
 [`../../web/src/lib/messagesStore.svelte.js`](../../web/src/lib/messagesStore.svelte.js)
 (`adjustUnread`),
 [`../../web/src/lib/unread-batch-core.js`](../../web/src/lib/unread-batch-core.js).
+
+## Native FX.25 scope and transmission evidence
+
+FX.25 TX/RX is restricted to Bell 202 AFSK 1200 baud, 1200/2200 Hz tones.
+Unsupported FX.25 configuration is rejected. An oversized frame in an
+otherwise supported configuration uses explicitly reported ordinary AX.25
+fallback; it is never truncated. TX selection and metadata come from the
+same Rust builder. RX `fx25` metadata requires successful RS and embedded
+HDLC/FCS validation. A channel toggle or tag detection alone is insufficient.
+See [implementation](../fx25.md) and [acceptance record](../fx25-validation.md).
+
+`TransmitEncoding` enriches an existing packet row by process-local frame ID
+and channel; it must not broadcast a second packet event. Encoding/queue
+acceptance and the legacy beacon API `sent` response are not RF proof.
+
+Only modem status marked `dcd_state_valid` may reconcile cached carrier state.
+Initial/placeholder quiet status must not clear a genuine busy indication.
+After audio reconfiguration, valid quiet status can clear stale busy state
+without another RX packet or edge. Do not add a timeout that forces TX through
+a genuine busy channel. Input-device binding remains a separate native
+backend requirement; this does not imply decoded RX is required for TX.
