@@ -131,10 +131,16 @@ Wiki-side notes:
 ## Fork combined-testing release
 
 The fork-only `.github/workflows/combined-release.yml` validates and builds
-Linux ARM64 on `integration/combined-testing`. `INTEGRATION_VERSION` stamps
+Linux ARM64 and x86_64 on `integration/combined-testing`. `INTEGRATION_VERSION` stamps
 both binaries without changing upstream VERSION.
-`scripts/integration/package-arm64.sh` creates the standard tarball, Debian
-package, exact source archive and checksums. Release publication is guarded
+`scripts/integration/package-linux.sh arm64|amd64` creates architecture-checked
+paired tarballs and Debian packages, exact source archives and checksums.
+`package-arm64.sh` remains a compatibility wrapper. An initial integration job
+merges pinned FX.25/PTT/color heads; all build and publish jobs use its exact
+output SHA, rather than the workflow-trigger SHA. Separate native Bookworm
+runners execute both architecture checks; publishing waits for both, verifies
+artifact checksums and identical shared source/notes, then combines the assets.
+Standalone BUILD-arm64.txt and BUILD-amd64.txt avoid manifest collisions. Release publication is guarded
 to `samwathegreat/graywolf`; no upstream Docker or multi-platform release
 workflow is invoked. [Combined provenance](../combined-testing.md) records
 selected PR heads, merge repairs, install scope and pending physical checks.

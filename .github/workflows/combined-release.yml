@@ -1,4 +1,4 @@
-name: Combined testing ARM64 release
+name: Combined testing Linux release
 
 on:
   push:
@@ -12,9 +12,55 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate-build:
+  integrate:
     if: github.repository == 'samwathegreat/graywolf'
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.merge.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Merge pinned approved feature heads
+        id: merge
+        env:
+          FX25_HEAD: 1f41127677210ccc817dc5342fee8f44880a0936
+          PTT_HEAD: eee674e51747b4f00e04c42b481ec8b8de61f4f3
+          COLORS_HEAD: c3ed4198bfbb67fb5f948f27923c2672bfc85eb3
+        run: |
+          set -euo pipefail
+          git config user.name samwathegreat
+          git config user.email samwathegreat@users.noreply.github.com
+          for head in "$FX25_HEAD" "$PTT_HEAD" "$COLORS_HEAD"; do
+            git fetch origin "$head"
+            git merge --no-ff --no-edit "$head"
+          done
+          # Every row of the published manifest must be present in the build.
+          while read -r head; do
+            git merge-base --is-ancestor "$head" HEAD
+          done < <(sed -nE 's/.*\| ([0-9a-f]{40}) \|/\1/p' docs/combined-testing.md)
+          test "$(sed -nE 's/.*\| ([0-9a-f]{40}) \|/\1/p' docs/combined-testing.md | wc -l)" -eq 10
+          bash -n scripts/integration/package-linux.sh scripts/integration/package-arm64.sh
+          # A normal push refuses concurrent edits; never force the branch.
+          git push origin HEAD:refs/heads/integration/combined-testing
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "Source commit: $(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+          # GITHUB_TOKEN pushes do not trigger a second run. Build this SHA below.
+  validate-build:
+    needs: integrate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+          - arch: amd64
+            runner: ubuntu-24.04
+    if: github.repository == 'samwathegreat/graywolf'
+    runs-on: ${{ matrix.runner }}
     container: debian:bookworm
     timeout-minutes: 45
     env:
@@ -33,6 +79,8 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          ref: ${{ needs.integrate.outputs.sha }}
+          persist-credentials: false
       - name: Trust the container checkout
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - uses: actions/setup-node@v5
@@ -49,7 +97,7 @@ jobs:
         run: |
           set -euo pipefail
           commit=$(git rev-parse HEAD)
-          test "$commit" = "$GITHUB_SHA"
+          test "$commit" = "${{ needs.integrate.outputs.sha }}"
           echo "GRAYWOLF_VERSION=$(cat INTEGRATION_VERSION)" >> "$GITHUB_ENV"
           echo "GRAYWOLF_GIT_COMMIT=${commit:0:8}" >> "$GITHUB_ENV"
       - name: Web tests, API client check and production build
@@ -91,7 +139,7 @@ jobs:
           cmake -S /tmp/direwolf-reference -B /tmp/direwolf-reference/build
           cmake --build /tmp/direwolf-reference/build --target gen_packets atest -j2
           GRAYWOLF_FX25_TOOL="$PWD/target/release/examples/fx25_audio" python3 scripts/fx25/interop.py /tmp/direwolf-reference
-      - name: Build and verify paired ARM64 application
+      - name: Build and verify paired Linux application
         env:
           CGO_ENABLED: '0'
         run: |
@@ -102,28 +150,45 @@ jobs:
           bin/graywolf-modem --version | tee /tmp/modem-version.txt
           grep -F "v$GRAYWOLF_VERSION-$GRAYWOLF_GIT_COMMIT" /tmp/go-version.txt
           grep -F "v$GRAYWOLF_VERSION-$GRAYWOLF_GIT_COMMIT" /tmp/modem-version.txt
-          scripts/integration/package-arm64.sh bin dist-combined
+          scripts/integration/package-linux.sh ${{ matrix.arch }} bin dist-combined
           dpkg-deb --info dist-combined/*.deb
           dpkg-deb --contents dist-combined/*.deb
           git diff --exit-code
       - uses: actions/upload-artifact@v5
         with:
-          name: combined-linux-arm64
+          name: combined-linux-${{ matrix.arch }}
           path: dist-combined/
           retention-days: 14
 
   publish:
     if: github.repository == 'samwathegreat/graywolf'
-    needs: validate-build
+    needs: [integrate, validate-build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.integrate.outputs.sha }}
+          persist-credentials: false
       - uses: actions/download-artifact@v5
         with:
-          name: combined-linux-arm64
-          path: dist-combined
+          pattern: combined-linux-*
+          path: artifacts
+      - name: Verify and collect both architectures
+        run: |
+          set -euo pipefail
+          version=$(cat INTEGRATION_VERSION)
+          mkdir -p dist-combined
+          for arch in arm64 amd64; do
+            (cd "artifacts/combined-linux-$arch" && sha256sum -c checksums.txt)
+            cp artifacts/combined-linux-$arch/*.deb artifacts/combined-linux-$arch/*_linux_*.tar.gz artifacts/combined-linux-$arch/BUILD-*.txt dist-combined/
+          done
+          for shared in "graywolf_${version}_source.tar.gz" RELEASE_NOTES.md; do
+            cmp "artifacts/combined-linux-arm64/$shared" "artifacts/combined-linux-amd64/$shared"
+            cp "artifacts/combined-linux-arm64/$shared" dist-combined/
+          done
+          (cd dist-combined && sha256sum * > checksums.txt && sha256sum -c checksums.txt)
       - name: Publish complete fork test release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -131,5 +196,5 @@ jobs:
           set -euo pipefail
           tag="v$(cat INTEGRATION_VERSION)"
           # Build a draft first, then expose the complete asset set via latest.
-          gh release create "$tag" dist-combined/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --draft --title "Graywolf $(cat INTEGRATION_VERSION) - combined testing (Linux ARM64)" --notes-file RELEASE_NOTES.md
+          gh release create "$tag" dist-combined/* --repo "$GITHUB_REPOSITORY" --target "${{ needs.integrate.outputs.sha }}" --draft --title "Graywolf $(cat INTEGRATION_VERSION) - combined testing (Linux ARM64 and x86_64)" --notes-file RELEASE_NOTES.md
           gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --latest
