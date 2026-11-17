@@ -1,22 +1,33 @@
-# Combined testing 0.14.14-combined.4 for Linux ARM64 and x86_64
+# Combined testing 0.14.14-combined.5 for Linux ARM64 and x86_64
 
 This is a testing release from samwathegreat/graywolf, not an official
-upstream Graywolf release. It retains the twelve selected changes from combined.3
-and updates the three recent feature PRs. Published as Latest for existing
+upstream Graywolf release. It retains all twelve selected changes from combined.4
+and integrates the revised Signal theme PR alongside scrolling/resizing PR #9. Published as Latest for existing
 custom-repository installers; operator acceptance is still pending.
 
 New in this build:
 
-- Packet-log dragging continues near the viewport edge and scrolls the page,
-  so expansion is no longer limited by the bottom of the physical screen.
-- Desktop logo/primary navigation stays visible while only Settings scrolls.
-- Mobile enhanced packet accents override the legacy direction-only borders.
-- The actual preference is now Enhanced packet view, with descriptive guidance;
-  existing browser selections survive the rename. The feature remains off by default.
+- Signal Light and Signal Dark in the existing Theme selector, replacing the
+  separate Enhanced packet view switch. The existing default/themes remain
+  available; the old packet-toggle value is ignored.
+- Bundled Inter interface text and JetBrains Mono packet/terminal data, with
+  offline font files and licenses. Exact palettes are in docs/signal-themes.md.
+- Responsive wide Dashboard/log layouts, flexible badge/address columns and
+  wrapping mobile packet cards with flow colors and clear packet separators.
+- Theme-matched native DCD/RX/TX and audio presentation. KISS-only channels show
+  actual TNC state/activity, without a fabricated audio meter or DCD reading.
+- Multiple enabled RF-capable Beacon Now buttons use custom beacon labels and
+  wrap below the channel status. APRS-IS-only beacons remain on the Beacons page.
+
+Included scrolling and telemetry updates:
+
+- PR #9: drag the log continuously near the viewport edge; the page scrolls
+  automatically. The fixed upper desktop navigation keeps common links visible
+  while Settings scrolls independently. Browser-saved height and reset remain.
 - Telemetry defaults to APRS-IS only, recommended for Internet-connected stations.
-  Existing saved route choices are preserved. RF-only and IS-preferred/RF-fallback
-  modes require an RF channel to save, including when telemetry is disabled.
-- Operator handbook and PR documentation reflect these changes.
+  Existing saved delivery choices are preserved. RF-only or IS-preferred with
+  RF fallback requires an RF channel to save, including while disabled.
+- All other selected feature and upstream PRs remain included.
 
 Telemetry sequencing is stored in Graywolf's main configuration database.
 PacketRover's durable-database migration is a separate appliance update and is
@@ -30,7 +41,7 @@ Retained features:
   oversized frames use explicitly identified ordinary AX.25 fallback.
 - Native station-wide T# activity telemetry, disabled by default, with ready-input
   ten-minute baseline, spaced definitions, delivery selection and recent status.
-- Enhanced packet-flow colors/separators and browser-saved Dashboard log height,
+- Theme-driven enhanced packet-flow colors/separators and browser-saved log height,
   400 px default, 200 px minimum, content-aware maximum up to 1600 px.
 - Independent RTS/DTR serial PTT polarity.
 - Optional beacon display labels, preserving the APRS symbol.

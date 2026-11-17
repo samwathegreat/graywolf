@@ -15,7 +15,7 @@ Base: upstream/main `bde16a1752ef96e8907aea9dc18c698e3e96a9d7`.
 | #682 KISS interface display names | 26f24b3fa7f837fe4d7115dfcc2f3a5de4f4c07f |
 | #684 tracker GPS freshness suppression | a871b0e4cf239d49538589df773252f71a53dc7e |
 | Native 1200-baud FX.25, awaiting upstream PR | 4d54af153e101b2dd99add49a82b32a99df22b68 |
-| Fork #8 Enhanced packet view: mobile accents, optional colors and separators | 34c07ca752330954e0827ae917b625a87d962b3c |
+| Fork #8 Signal Light/Dark themes, responsive Dashboard and packet presentation | 8b79e9db522afed15a37569afb9a766111088307 |
 | Fork #9 edge-assisted packet-log resizing and pinned desktop navigation | 02550a3f7d3a94629bc01375cecab9086ecc2939 |
 | Fork #7 native station-wide T# telemetry | 06d7691ba511b57e199c19a2eec53c9667254ffd |
 | Upstream #657 preserve repeated RF path markers | 0883688836bf852ae166b16382ef239bbbe499c2 |
@@ -30,16 +30,21 @@ are excluded. Digipeating retains upstream's explicit enablement behavior.
 The updated feature heads include operator documentation, including the
 1200-baud-only FX.25 limitation. #676 retains stable Linux
 `/dev/serial/by-id/` choices and FX.25 retains unconditional badge wrapping.
-Packet colors are a
-separate opt-in display feature: Preferences > General > Enhanced packet view,
-immediately after Theme. It is off by default and remembered by this browser.
-With colors off, existing packet colors and plain live-monitor text remain.
-Graywolf/Night use the approved colors; grayscale/high-contrast themes use
-matching monochrome treatments. All payloads and exports retain their data.
+Signal Light and Signal Dark are selected through Preferences > Theme.
+They replace the separate Enhanced packet view selector. Graywolf remains the
+default, and existing themes retain their original packet/monitor presentation.
+The former browser toggle is ignored; it does not change the selected theme.
+Signal bundles Inter and JetBrains Mono for offline mixed typography. Its exact
+packet/interface palette is documented in [Signal themes](signal-themes.md).
+Signal packet rows/cards use explicit flow labels, accents and separators;
+badges grow across available screen width and wrap when needed. The Dashboard
+and log pages expand on wide screens while settings forms remain bounded.
+KISS-only channels show actual connection/activity state without fabricated
+audio measurements. All enabled RF-capable beacon buttons use the existing
+label helper and wrap into an action row when multiple beacons are configured.
+APRS-IS-only buttons remain on the Beacons page. No simulated-TX indicator is
+added. Payloads, exports, scheduling and RF routes retain their data/behavior.
 
-Colored packets have 5 px gaps and subtle borders on desktop/mobile.
-Mobile accents now override legacy direction-only borders. The actual
-preference is named Enhanced packet view; existing browser selections survive.
 The Dashboard log has a pointer/keyboard resize grip, browser-saved preferred
 height, reset control, 200 px minimum and content-aware 1600 px maximum;
 the default remains 400 px and the feed still fetches 20 packets. Holding
@@ -133,8 +138,10 @@ Recheck native RX/TX, PTT, duplicate handling, ordinary AX.25 and FX.25 fallback
 then exercise beacon labels/symbols, optional GPS freshness, KISS labels,
 source allow rules, TX metrics, RF path preservation and comment commands.
 Also check badge wrapping with several labels, stable serial by-id selection,
-and the new color preference in both packet logs and the live monitor. Check
-colors off, on, theme changes and reload; confirm grayscale/high-contrast stay
+and Signal Light/Dark in both packet logs and the live monitor. Switch back to
+existing themes and confirm their normal presentation. Check theme reload,
+offline fonts, wide/narrow viewers, native/KISS-only channels, and long/multiple
+beacon labels. Confirm grayscale/high-contrast and forced-color modes stay
 readable. Check packet separation, resizing and saved-height reload/reset on
 both desktop and mobile, including keyboard input and UI scaling. Test native
 telemetry readiness, ten-minute baseline, route selection and recent status
