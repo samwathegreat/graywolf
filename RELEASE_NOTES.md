@@ -1,11 +1,20 @@
-# Combined testing 0.14.14-combined.5 for Linux ARM64 and x86_64
+# Combined testing 0.14.14-combined.6 for Linux ARM64 and x86_64
 
 This is a testing release from samwathegreat/graywolf, not an official
-upstream Graywolf release. It retains all twelve selected changes from combined.4
-and integrates the revised Signal theme PR alongside scrolling/resizing PR #9. Published as Latest for existing
+upstream Graywolf release. It retains all twelve selected changes from combined.5
+and refines the Signal Dashboard audio meter and status layout. Published as Latest for existing
 custom-repository installers; operator acceptance is still pending.
 
 New in this build:
+
+- Native DCD/RX/TX indicators sit beside the channel name. The numeric dBFS
+  reading sits immediately before the RX Audio meter.
+- A visible empty track and -60/-40/-20/0 dBFS scale make the level readable.
+  Meter width responds to available space, capped at 480 px, and moves to its
+  own row on narrow screens. KISS-only channels retain their TNC status.
+- PR #9 scrolling/resizing has operator acceptance; its source is unchanged.
+
+Retained Signal theme updates:
 
 - Signal Light and Signal Dark in the existing Theme selector, replacing the
   separate Enhanced packet view switch. The existing default/themes remain
@@ -69,5 +78,6 @@ Verify downloads using checksums.txt.
 
 The smaller FX.25/PTT build passed operator RF tests. Physical acceptance of
 this updated combination remains pending on each architecture. No general
-RF performance advantage over Dire Wolf is claimed. Upstream FX.25 and
-colorization/resizing/telemetry upstream submissions remain on hold.
+RF performance advantage over Dire Wolf is claimed. Theme and telemetry
+upstream submissions remain on hold. PR #9 and FX.25 are
+operator-accepted and prepared for separate upstream submissions.

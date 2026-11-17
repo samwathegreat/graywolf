@@ -15,7 +15,7 @@ Base: upstream/main `bde16a1752ef96e8907aea9dc18c698e3e96a9d7`.
 | #682 KISS interface display names | 26f24b3fa7f837fe4d7115dfcc2f3a5de4f4c07f |
 | #684 tracker GPS freshness suppression | a871b0e4cf239d49538589df773252f71a53dc7e |
 | Native 1200-baud FX.25, awaiting upstream PR | 4d54af153e101b2dd99add49a82b32a99df22b68 |
-| Fork #8 Signal Light/Dark themes, responsive Dashboard and packet presentation | 8b79e9db522afed15a37569afb9a766111088307 |
+| Fork #8 Signal Light/Dark themes, responsive Dashboard and packet presentation | 09c5a833487d84a1b4e8075ddbad615dd3a0b8d1 |
 | Fork #9 edge-assisted packet-log resizing and pinned desktop navigation | 02550a3f7d3a94629bc01375cecab9086ecc2939 |
 | Fork #7 native station-wide T# telemetry | 06d7691ba511b57e199c19a2eec53c9667254ffd |
 | Upstream #657 preserve repeated RF path markers | 0883688836bf852ae166b16382ef239bbbe499c2 |
@@ -43,7 +43,10 @@ KISS-only channels show actual connection/activity state without fabricated
 audio measurements. All enabled RF-capable beacon buttons use the existing
 label helper and wrap into an action row when multiple beacons are configured.
 APRS-IS-only buttons remain on the Beacons page. No simulated-TX indicator is
-added. Payloads, exports, scheduling and RF routes retain their data/behavior.
+added. Native DCD/RX/TX sit beside the channel name. The dBFS value precedes
+a visible outlined audio track, with -60/-40/-20/0 dBFS scale marks. The meter
+grows with screen width up to 480 px and uses a separate row on narrow screens.
+Payloads, exports, scheduling and RF routes retain their data/behavior.
 
 The Dashboard log has a pointer/keyboard resize grip, browser-saved preferred
 height, reset control, 200 px minimum and content-aware 1600 px maximum;
