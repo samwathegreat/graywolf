@@ -8,29 +8,45 @@ Base: upstream/main `bde16a1752ef96e8907aea9dc18c698e3e96a9d7`.
 
 | Change | Exact source head |
 |---|---|
-| #674 exact-source APRS-IS-to-RF allow rules | 5b7e2d074da87cc90f06af8f8ab33fe20937d2f1 |
-| #675 beacon labels, including symbol retention | 9e3a3c2feef2e48365089b89e69a614b5d86bbb9 |
-| #676 independent serial RTS/DTR PTT | eee674e51747b4f00e04c42b481ec8b8de61f4f3 |
-| #680 source-attributed TX outcomes | 6c5a3cb9cb1d31e28a4c4e88306bb0fe25cfd921 |
-| #682 KISS interface display names | a4d8452ff0de2cab0342219d0a3ac4ef933e3cbe |
+| #674 exact-source APRS-IS-to-RF allow rules | 3f64275a38ec5defccf308f453f90ae68853d260 |
+| #675 beacon labels, including symbol retention | 04fae68220c2c655c754c828c03ab55cc794a9ff |
+| #676 independent serial RTS/DTR PTT | d1e94fc447bce0890b7b0c80c36da385946b0efd |
+| #680 source-attributed TX outcomes | d23d0af989656eb213a0c76d57728c219fa6488d |
+| #682 KISS interface display names | 26f24b3fa7f837fe4d7115dfcc2f3a5de4f4c07f |
 | #684 tracker GPS freshness suppression | a871b0e4cf239d49538589df773252f71a53dc7e |
-| Native 1200-baud FX.25, awaiting upstream PR | 1f41127677210ccc817dc5342fee8f44880a0936 |
-| Optional theme-aware packet colors, awaiting upstream PR | c3ed4198bfbb67fb5f948f27923c2672bfc85eb3 |
+| Native 1200-baud FX.25, awaiting upstream PR | 4d54af153e101b2dd99add49a82b32a99df22b68 |
+| Fork #8 enhanced packet display: optional colors and separators | 6c6dcca4cd63401eb42686636b124485fe0fc4bb |
+| Fork #9 resizable Dashboard packet log | fe3969aec219e2a2221734baf4bec424517ecb96 |
+| Fork #7 native station-wide T# telemetry | ed8fae3a7b21ecb133426d4e02b901ec8b7bb614 |
 | Upstream #657 preserve repeated RF path markers | 0883688836bf852ae166b16382ef239bbbe499c2 |
 | Upstream #617 beacon comment-command UI | 90e7cda3ce987d7fd8ca1dee6c4a5fc7bd100160 |
 
-This is ten selected changes: six existing PRs from this fork, the unsubmitted
-FX.25 and packet-color branches, and upstream PRs #657 and #617. The
+This is twelve selected changes: six existing upstream PRs from this fork,
+the unsubmitted FX.25 branch, fork drafts #7/#8/#9, and selected upstream
+PRs #657 and #617. The
 `ci/tracker-fresh-gps` test branch and `fix/digipeater-inherit-first-save`
 are excluded. Digipeating retains upstream's explicit enablement behavior.
 
-The latest #676 head adds stable Linux `/dev/serial/by-id/` choices. The
-latest FX.25 head wraps packet badges unconditionally. Packet colors are a
+The updated feature heads include operator documentation, including the
+1200-baud-only FX.25 limitation. #676 retains stable Linux
+`/dev/serial/by-id/` choices and FX.25 retains unconditional badge wrapping.
+Packet colors are a
 separate opt-in display feature: Preferences > General > Colorize packets,
 immediately after Theme. It is off by default and remembered by this browser.
 With colors off, existing packet colors and plain live-monitor text remain.
 Graywolf/Night use the approved colors; grayscale/high-contrast themes use
 matching monochrome treatments. All payloads and exports retain their data.
+
+Colored packets now have 5 px gaps and subtle borders on desktop/mobile.
+The Dashboard log has a pointer/keyboard resize grip, browser-saved preferred
+height, reset control, 200 px minimum and content-aware 1600 px maximum;
+the default remains 400 px and the feed still fetches 20 packets.
+Native T# telemetry is disabled by default and has a dedicated Telemetry page.
+It reports station-wide RF Rx, Digi, RF Tx, RF-to-IS and IS-to-RF activity after
+a full ten-minute ready-input baseline. Status/history and delivery settings
+are documented in the telemetry handbook. Definition frames are spaced to
+avoid a burst. This combined build includes forwarded Digi accounting; the
+standalone telemetry branch retains its documented fallback for compatibility.
 
 ## Merge compatibility
 
@@ -54,8 +70,8 @@ parser accepts only stable x.y.z entries; combined-test notes instead ship in
 RELEASE_NOTES.md and on the fork release. Both binaries are stamped with
 the integration version and the same fixed eight-character source commit.
 The fork-only `combined-release.yml` workflow runs on this branch. Its first
-job merges the three pinned update heads above with normal fast-forward-only
-branch publication. Both matrix jobs check out that exact merged source SHA,
+job merges any missing manifest heads with normal fast-forward-only branch
+publication. Both matrix jobs check out that exact merged source SHA,
 then run web/API, Go race, Rust/PTT and pinned Dire Wolf interoperability checks.
 They build natively in Debian Bookworm on separate ARM64 and amd64 runners.
 Publication waits for both jobs. Supported targets are Pi 4 on 64-bit Raspberry
@@ -76,8 +92,9 @@ Assets use the normal Graywolf names:
 - `checksums.txt`: SHA256 for the release assets.
 
 The workflow publishes only in `samwathegreat/graywolf`. The GitHub release
-is published with its prerelease flag off so a custom-repository installer
-using `releases/latest` can discover it. Its title, version and notes explicitly
+is published as a prerelease for acceptance testing. An installer using
+`releases/latest` continues to see the previous release; select this version
+explicitly from the release page. Its title, version and notes explicitly
 identify it as a combined testing build, not an upstream stable release.
 This does not modify the PacketRover installer or its unfinished selector.
 Do not assume compatibility with that selector until it is implemented/tested.
@@ -100,7 +117,11 @@ source allow rules, TX metrics, RF path preservation and comment commands.
 Also check badge wrapping with several labels, stable serial by-id selection,
 and the new color preference in both packet logs and the live monitor. Check
 colors off, on, theme changes and reload; confirm grayscale/high-contrast stay
-readable. Each architecture needs its own operator acceptance.
+readable. Check packet separation, resizing and saved-height reload/reset on
+both desktop and mobile, including keyboard input and UI scaling. Test native
+telemetry readiness, ten-minute baseline, route selection and recent status
+with explicit operator-controlled sends. Each architecture needs its own
+operator acceptance.
 Use the sending station's actual position; initiate each RF packet manually.
 No unattended RF test is included. Re-image the disposable station afterward
 or reinstall the previous known-good paired package before restoring service.

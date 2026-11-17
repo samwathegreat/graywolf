@@ -1,18 +1,24 @@
-# Combined testing 0.14.14-combined.2 for Linux ARM64 and x86_64
+# Combined testing 0.14.14-combined.3 for Linux ARM64 and x86_64
 
 This is a testing release from samwathegreat/graywolf, not an official
-upstream Graywolf release. It retains the previous nine selected changes and
-adds optional packet colorization, with updated serial PTT and badge wrapping.
+upstream Graywolf release. It retains the selected changes from combined.2,
+updates our feature heads, and adds native T# telemetry and log resizing.
+This is a prerelease: installers using releases/latest stay on the previous
+release. Select this version explicitly for acceptance testing.
 
 New in this build:
 
-- Packet badges wrap so labels remain visible when several apply.
-- Linux serial PTT can use stable /dev/serial/by-id/ device names.
-- Optional theme-aware packet highlights distinguish reception, transmission,
-  gating and digipeating in packet logs and the live monitor. Colorize packets
-  is after Theme in General preferences and is OFF by default. With it off,
-  the existing colors and plain monitor text remain. Badge wrapping is always on.
-- Matching app/modem packages are available for both Linux ARM64 and x86_64.
+- Native, optional station-wide T# activity telemetry with its own settings
+  page, ten-minute baseline after RF input readiness, spaced definitions,
+  delivery selection and recent collection/submission status. Disabled by default.
+- Colored packets have clear gaps and subtle borders between complete records
+  on desktop/mobile. Colorization remains optional and off by default.
+- Drag the Dashboard packet log downward/upward, save the height in this browser,
+  resize with the keyboard or reset to 400 px. Minimum 200 px; content-aware
+  maximum up to 1600 px. The feed still fetches the latest 20 packets.
+- Updated operator documentation across the selected feature branches. FX.25
+  is explicitly limited to 1200-baud AFSK.
+- Retain selected upstream #657 (RF path markers) and #617 (comment-command UI).
 
 Retained features:
 
@@ -46,4 +52,4 @@ Verify downloads using checksums.txt.
 The smaller FX.25/PTT build passed operator RF tests. Physical acceptance of
 this updated combination remains pending on each architecture. No general
 RF performance advantage over Dire Wolf is claimed. Upstream FX.25 and
-colorization PRs remain on hold.
+colorization/resizing/telemetry upstream submissions remain on hold.

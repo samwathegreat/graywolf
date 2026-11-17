@@ -26,23 +26,22 @@ jobs:
           fetch-depth: 0
       - name: Merge pinned approved feature heads
         id: merge
-        env:
-          FX25_HEAD: 1f41127677210ccc817dc5342fee8f44880a0936
-          PTT_HEAD: eee674e51747b4f00e04c42b481ec8b8de61f4f3
-          COLORS_HEAD: c3ed4198bfbb67fb5f948f27923c2672bfc85eb3
         run: |
           set -euo pipefail
           git config user.name samwathegreat
           git config user.email samwathegreat@users.noreply.github.com
-          for head in "$FX25_HEAD" "$PTT_HEAD" "$COLORS_HEAD"; do
-            git fetch origin "$head"
-            git merge --no-ff --no-edit "$head"
-          done
+          heads=$(sed -nE 's/.*\| ([0-9a-f]{40}) \|/\1/p' docs/combined-testing.md)
+          test "$(printf '%s\n' "$heads" | wc -l)" -eq 12
+          while read -r head; do
+            if ! git merge-base --is-ancestor "$head" HEAD; then
+              git fetch origin "$head"
+              git merge --no-ff --no-edit "$head"
+            fi
+          done <<< "$heads"
           # Every row of the published manifest must be present in the build.
           while read -r head; do
             git merge-base --is-ancestor "$head" HEAD
-          done < <(sed -nE 's/.*\| ([0-9a-f]{40}) \|/\1/p' docs/combined-testing.md)
-          test "$(sed -nE 's/.*\| ([0-9a-f]{40}) \|/\1/p' docs/combined-testing.md | wc -l)" -eq 10
+          done <<< "$heads"
           bash -n scripts/integration/package-linux.sh scripts/integration/package-arm64.sh
           # A normal push refuses concurrent edits; never force the branch.
           git push origin HEAD:refs/heads/integration/combined-testing
@@ -195,6 +194,6 @@ jobs:
         run: |
           set -euo pipefail
           tag="v$(cat INTEGRATION_VERSION)"
-          # Build a draft first, then expose the complete asset set via latest.
+          # Assemble the complete asset set before publishing this test prerelease.
           gh release create "$tag" dist-combined/* --repo "$GITHUB_REPOSITORY" --target "${{ needs.integrate.outputs.sha }}" --draft --title "Graywolf $(cat INTEGRATION_VERSION) - combined testing (Linux ARM64 and x86_64)" --notes-file RELEASE_NOTES.md
-          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --prerelease --latest=false
