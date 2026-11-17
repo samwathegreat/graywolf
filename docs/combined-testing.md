@@ -2,28 +2,27 @@
 
 This fork-only branch combines the selected changes for local station testing.
 It is not an upstream Graywolf release and is not a permanent feature branch.
-No upstream FX.25 PR is opened by this build.
+Feature PRs remain separate from this combined testing branch.
 
 Base: upstream/main `bde16a1752ef96e8907aea9dc18c698e3e96a9d7`.
 
 | Change | Exact source head |
 |---|---|
-| #674 exact-source APRS-IS-to-RF allow rules | 3f64275a38ec5defccf308f453f90ae68853d260 |
+| #674 exact-source APRS-IS-to-RF allow rules | 1dbf3e17d82091d2505498caf195b0a05c5c1432 |
 | #675 beacon labels, including symbol retention | 04fae68220c2c655c754c828c03ab55cc794a9ff |
 | #676 independent serial RTS/DTR PTT | d1e94fc447bce0890b7b0c80c36da385946b0efd |
 | #680 source-attributed TX outcomes | d23d0af989656eb213a0c76d57728c219fa6488d |
 | #682 KISS interface display names | 26f24b3fa7f837fe4d7115dfcc2f3a5de4f4c07f |
 | #684 tracker GPS freshness suppression | a871b0e4cf239d49538589df773252f71a53dc7e |
-| Native 1200-baud FX.25, awaiting upstream PR | 4d54af153e101b2dd99add49a82b32a99df22b68 |
-| Fork #8 Signal Light/Dark themes, responsive Dashboard and packet presentation | 09c5a833487d84a1b4e8075ddbad615dd3a0b8d1 |
-| Fork #9 edge-assisted packet-log resizing and pinned desktop navigation | 02550a3f7d3a94629bc01375cecab9086ecc2939 |
+| #687 native 1200-baud FX.25 | c2f6294d18b04ed41bee4690eaa768208faeb0a9 |
+| #685 Signal Light/Dark themes, responsive Dashboard and complete timestamps | e2edbc0359ce009d83b229d53def6c73d63e8d61 |
+| #686 edge-assisted packet-log resizing and pinned desktop navigation | 02550a3f7d3a94629bc01375cecab9086ecc2939 |
 | Fork #7 native station-wide T# telemetry | 06d7691ba511b57e199c19a2eec53c9667254ffd |
 | Upstream #657 preserve repeated RF path markers | 0883688836bf852ae166b16382ef239bbbe499c2 |
 | Upstream #617 beacon comment-command UI | 90e7cda3ce987d7fd8ca1dee6c4a5fc7bd100160 |
 
-This is twelve selected changes: six existing upstream PRs from this fork,
-the unsubmitted FX.25 branch, fork drafts #7/#8/#9, and selected upstream
-PRs #657 and #617. The
+This is twelve selected changes: nine upstream PRs from this fork, native
+telemetry in fork draft #7, and selected upstream PRs #657 and #617. The
 `ci/tracker-fresh-gps` test branch and `fix/digipeater-inherit-first-save`
 are excluded. Digipeating retains upstream's explicit enablement behavior.
 
@@ -46,6 +45,12 @@ APRS-IS-only buttons remain on the Beacons page. No simulated-TX indicator is
 added. Native DCD/RX/TX sit beside the channel name. The dBFS value precedes
 a visible outlined audio track, with -60/-40/-20/0 dBFS scale marks. The meter
 grows with screen width up to 480 px and uses a separate row on narrow screens.
+Timestamp columns fit their full content, padding and flow accent instead
+of using a fixed 108 px width. Narrow cards may wrap between date and clock;
+HH:MM:SS stays together when General display size changes.
+The iGate UI/handbook explain that a blank server filter does not disable
+normal APRS-IS messaging or automatic tactical subscriptions. Examples use
+generic callsigns; the FX.25 test receiver is described without its callsign.
 Payloads, exports, scheduling and RF routes retain their data/behavior.
 
 The Dashboard log has a pointer/keyboard resize grip, browser-saved preferred
@@ -141,7 +146,9 @@ Recheck native RX/TX, PTT, duplicate handling, ordinary AX.25 and FX.25 fallback
 then exercise beacon labels/symbols, optional GPS freshness, KISS labels,
 source allow rules, TX metrics, RF path preservation and comment commands.
 Also check badge wrapping with several labels, stable serial by-id selection,
-and Signal Light/Dark in both packet logs and the live monitor. Switch back to
+and Signal Light/Dark in both packet logs and the live monitor. Confirm full
+timestamps at 100%, every General display size from 90% through 200%, and
+wide/narrow viewers; verify seconds remain visible and the clock stays intact. Switch back to
 existing themes and confirm their normal presentation. Check theme reload,
 offline fonts, wide/narrow viewers, native/KISS-only channels, and long/multiple
 beacon labels. Confirm grayscale/high-contrast and forced-color modes stay

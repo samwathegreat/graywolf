@@ -1,18 +1,29 @@
-# Combined testing 0.14.14-combined.6 for Linux ARM64 and x86_64
+# Combined testing 0.14.14-combined.7 for Linux ARM64 and x86_64
 
 This is a testing release from samwathegreat/graywolf, not an official
-upstream Graywolf release. It retains all twelve selected changes from combined.5
-and refines the Signal Dashboard audio meter and status layout. Published as Latest for existing
-custom-repository installers; operator acceptance is still pending.
+upstream Graywolf release. It retains all twelve selected changes from combined.6
+and fixes clipped timestamps in Signal themes. Published as Latest for existing
+custom-repository installers; visual acceptance of this fix remains pending.
 
 New in this build:
 
-- Native DCD/RX/TX indicators sit beside the channel name. The numeric dBFS
-  reading sits immediately before the RX Audio meter.
-- A visible empty track and -60/-40/-20/0 dBFS scale make the level readable.
-  Meter width responds to available space, capped at 480 px, and moves to its
-  own row on narrow screens. KISS-only channels retain their TNC status.
-- PR #9 scrolling/resizing has operator acceptance; its source is unchanged.
+- Signal packet timestamp columns fit their contents, padding and colored edge,
+  fixing clipped seconds even at the default 100% display size.
+- Narrow cards can put the date above the clock while keeping HH:MM:SS together.
+  The layout adapts to General display sizes from 90% through 200%.
+- Correct misleading iGate server-filter guidance: an empty field can still
+  receive normal APRS-IS messaging traffic and associated positions, plus
+  automatically subscribed tactical traffic. RF reception is independent.
+- Use generic callsigns in iGate examples and describe the FX.25 test receiver
+  as the separate receiving station.
+- Update provenance to upstream Signal themes #685, scrolling/resizing #686,
+  and native FX.25 #687. All twelve selected changes remain included.
+
+Retained audio-meter layout:
+
+- Native DCD/RX/TX sit beside the channel name. Numeric dBFS precedes an outlined
+  RX Audio meter with -60/-40/-20/0 scale marks and a responsive 480 px width cap.
+- KISS-only channels retain actual TNC state/activity without fabricated audio.
 
 Retained Signal theme updates:
 
@@ -30,7 +41,7 @@ Retained Signal theme updates:
 
 Included scrolling and telemetry updates:
 
-- PR #9: drag the log continuously near the viewport edge; the page scrolls
+- PR #686: drag the log continuously near the viewport edge; the page scrolls
   automatically. The fixed upper desktop navigation keeps common links visible
   while Settings scrolls independently. Browser-saved height and reset remain.
 - Telemetry defaults to APRS-IS only, recommended for Internet-connected stations.
@@ -76,8 +87,10 @@ docs/combined-testing.md. BUILD-arm64.txt and BUILD-amd64.txt record the
 actual built commit and tools; each binary archive contains BUILD.txt too.
 Verify downloads using checksums.txt.
 
-The smaller FX.25/PTT build passed operator RF tests. Physical acceptance of
-this updated combination remains pending on each architecture. No general
-RF performance advantage over Dire Wolf is claimed. Theme and telemetry
-upstream submissions remain on hold. PR #9 and FX.25 are
-operator-accepted and prepared for separate upstream submissions.
+The smaller FX.25/PTT build passed operator RF tests. Signal themes and
+scrolling/resizing have operator acceptance, and upstream PRs #685/#686/#687
+are open. The timestamp fix in this release still needs visual confirmation at
+100%, narrow widths and every General display-size setting. Native telemetry
+remains a fork draft. Physical acceptance of the updated combination remains
+pending on each architecture. No general RF performance advantage over Dire Wolf
+is claimed.
