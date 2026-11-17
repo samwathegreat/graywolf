@@ -194,6 +194,6 @@ jobs:
         run: |
           set -euo pipefail
           tag="v$(cat INTEGRATION_VERSION)"
-          # Assemble the complete asset set before publishing this test prerelease.
+          # Assemble both architectures before publishing the complete fork test release.
           gh release create "$tag" dist-combined/* --repo "$GITHUB_REPOSITORY" --target "${{ needs.integrate.outputs.sha }}" --draft --title "Graywolf $(cat INTEGRATION_VERSION) - combined testing (Linux ARM64 and x86_64)" --notes-file RELEASE_NOTES.md
-          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --prerelease --latest=false
+          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --prerelease=false --latest

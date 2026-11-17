@@ -15,9 +15,9 @@ Base: upstream/main `bde16a1752ef96e8907aea9dc18c698e3e96a9d7`.
 | #682 KISS interface display names | 26f24b3fa7f837fe4d7115dfcc2f3a5de4f4c07f |
 | #684 tracker GPS freshness suppression | a871b0e4cf239d49538589df773252f71a53dc7e |
 | Native 1200-baud FX.25, awaiting upstream PR | 4d54af153e101b2dd99add49a82b32a99df22b68 |
-| Fork #8 enhanced packet display: optional colors and separators | 6c6dcca4cd63401eb42686636b124485fe0fc4bb |
-| Fork #9 resizable Dashboard packet log | fe3969aec219e2a2221734baf4bec424517ecb96 |
-| Fork #7 native station-wide T# telemetry | ed8fae3a7b21ecb133426d4e02b901ec8b7bb614 |
+| Fork #8 Enhanced packet view: mobile accents, optional colors and separators | 34c07ca752330954e0827ae917b625a87d962b3c |
+| Fork #9 edge-assisted packet-log resizing and pinned desktop navigation | 02550a3f7d3a94629bc01375cecab9086ecc2939 |
+| Fork #7 native station-wide T# telemetry | 06d7691ba511b57e199c19a2eec53c9667254ffd |
 | Upstream #657 preserve repeated RF path markers | 0883688836bf852ae166b16382ef239bbbe499c2 |
 | Upstream #617 beacon comment-command UI | 90e7cda3ce987d7fd8ca1dee6c4a5fc7bd100160 |
 
@@ -31,17 +31,24 @@ The updated feature heads include operator documentation, including the
 1200-baud-only FX.25 limitation. #676 retains stable Linux
 `/dev/serial/by-id/` choices and FX.25 retains unconditional badge wrapping.
 Packet colors are a
-separate opt-in display feature: Preferences > General > Colorize packets,
+separate opt-in display feature: Preferences > General > Enhanced packet view,
 immediately after Theme. It is off by default and remembered by this browser.
 With colors off, existing packet colors and plain live-monitor text remain.
 Graywolf/Night use the approved colors; grayscale/high-contrast themes use
 matching monochrome treatments. All payloads and exports retain their data.
 
-Colored packets now have 5 px gaps and subtle borders on desktop/mobile.
+Colored packets have 5 px gaps and subtle borders on desktop/mobile.
+Mobile accents now override legacy direction-only borders. The actual
+preference is named Enhanced packet view; existing browser selections survive.
 The Dashboard log has a pointer/keyboard resize grip, browser-saved preferred
 height, reset control, 200 px minimum and content-aware 1600 px maximum;
-the default remains 400 px and the feed still fetches 20 packets.
+the default remains 400 px and the feed still fetches 20 packets. Holding
+the pointer near the viewport edge continues resizing and scrolls the page.
+Desktop primary navigation stays visible while Settings scrolls independently.
 Native T# telemetry is disabled by default and has a dedicated Telemetry page.
+APRS-IS-only is the default/recommended delivery for Internet-connected
+stations. Existing delivery selections are preserved. RF-only and IS-preferred
+with RF fallback require an RF channel even when saving a disabled reporter.
 It reports station-wide RF Rx, Digi, RF Tx, RF-to-IS and IS-to-RF activity after
 a full ten-minute ready-input baseline. Status/history and delivery settings
 are documented in the telemetry handbook. Definition frames are spaced to
@@ -92,12 +99,23 @@ Assets use the normal Graywolf names:
 - `checksums.txt`: SHA256 for the release assets.
 
 The workflow publishes only in `samwathegreat/graywolf`. The GitHub release
-is published as a prerelease for acceptance testing. An installer using
-`releases/latest` continues to see the previous release; select this version
-explicitly from the release page. Its title, version and notes explicitly
+is published as a regular fork testing release and marked Latest so existing
+custom-repository installers using `releases/latest` can discover it. This
+publication flag does not establish operator acceptance. Its title, version
+and notes explicitly
 identify it as a combined testing build, not an upstream stable release.
 This does not modify the PacketRover installer or its unfinished selector.
 Do not assume compatibility with that selector until it is implemented/tested.
+
+## Appliance database persistence
+
+Graywolf saves telemetry's next sequence in its main configuration SQLite
+file before submitting a report. Restoring an older database also restores
+its older sequence. PacketRover's change to keep this database on persistent
+storage is implemented separately, not packaged by this Graywolf build.
+Until the appliance update is installed, a snapshot-restoring appliance can
+still reset sequences after reboot. Ten-minute samples and recent submission
+history intentionally remain process-local.
 
 ## Installation and testing
 

@@ -1,30 +1,37 @@
-# Combined testing 0.14.14-combined.3 for Linux ARM64 and x86_64
+# Combined testing 0.14.14-combined.4 for Linux ARM64 and x86_64
 
 This is a testing release from samwathegreat/graywolf, not an official
-upstream Graywolf release. It retains the selected changes from combined.2,
-updates our feature heads, and adds native T# telemetry and log resizing.
-This is a prerelease: installers using releases/latest stay on the previous
-release. Select this version explicitly for acceptance testing.
+upstream Graywolf release. It retains the twelve selected changes from combined.3
+and updates the three recent feature PRs. Published as Latest for existing
+custom-repository installers; operator acceptance is still pending.
 
 New in this build:
 
-- Native, optional station-wide T# activity telemetry with its own settings
-  page, ten-minute baseline after RF input readiness, spaced definitions,
-  delivery selection and recent collection/submission status. Disabled by default.
-- Colored packets have clear gaps and subtle borders between complete records
-  on desktop/mobile. Colorization remains optional and off by default.
-- Drag the Dashboard packet log downward/upward, save the height in this browser,
-  resize with the keyboard or reset to 400 px. Minimum 200 px; content-aware
-  maximum up to 1600 px. The feed still fetches the latest 20 packets.
-- Updated operator documentation across the selected feature branches. FX.25
-  is explicitly limited to 1200-baud AFSK.
-- Retain selected upstream #657 (RF path markers) and #617 (comment-command UI).
+- Packet-log dragging continues near the viewport edge and scrolls the page,
+  so expansion is no longer limited by the bottom of the physical screen.
+- Desktop logo/primary navigation stays visible while only Settings scrolls.
+- Mobile enhanced packet accents override the legacy direction-only borders.
+- The actual preference is now Enhanced packet view, with descriptive guidance;
+  existing browser selections survive the rename. The feature remains off by default.
+- Telemetry defaults to APRS-IS only, recommended for Internet-connected stations.
+  Existing saved route choices are preserved. RF-only and IS-preferred/RF-fallback
+  modes require an RF channel to save, including when telemetry is disabled.
+- Operator handbook and PR documentation reflect these changes.
+
+Telemetry sequencing is stored in Graywolf's main configuration database.
+PacketRover's durable-database migration is a separate appliance update and is
+not included in these packages. A host restoring older database snapshots can
+still rewind sequences until its persistence update is installed.
 
 Retained features:
 
 - Native FX.25 transmit and receive at 1200 baud, with per-packet encoding,
   parity and repaired-symbol information. Auto is recommended when enabled;
   oversized frames use explicitly identified ordinary AX.25 fallback.
+- Native station-wide T# activity telemetry, disabled by default, with ready-input
+  ten-minute baseline, spaced definitions, delivery selection and recent status.
+- Enhanced packet-flow colors/separators and browser-saved Dashboard log height,
+  400 px default, 200 px minimum, content-aware maximum up to 1600 px.
 - Independent RTS/DTR serial PTT polarity.
 - Optional beacon display labels, preserving the APRS symbol.
 - Optional suppression of tracker beacons when GPS updates become stale.
