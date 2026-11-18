@@ -1,23 +1,24 @@
-# Combined testing 0.14.14-combined.7 for Linux ARM64 and x86_64
+# Combined testing 0.14.14-combined.8 for Linux ARM64 and x86_64
 
 This is a testing release from samwathegreat/graywolf, not an official
-upstream Graywolf release. It retains all twelve selected changes from combined.6
-and fixes clipped timestamps in Signal themes. Published as Latest for existing
-custom-repository installers; visual acceptance of this fix remains pending.
+upstream Graywolf release. It retains all twelve selected changes from combined.7.
+Published as Latest for existing custom-repository installers.
 
 New in this build:
 
-- Signal packet timestamp columns fit their contents, padding and colored edge,
-  fixing clipped seconds even at the default 100% display size.
-- Narrow cards can put the date above the clock while keeping HH:MM:SS together.
-  The layout adapts to General display sizes from 90% through 200%.
-- Correct misleading iGate server-filter guidance: an empty field can still
-  receive normal APRS-IS messaging traffic and associated positions, plus
-  automatically subscribed tactical traffic. RF reception is independent.
-- Use generic callsigns in iGate examples and describe the FX.25 test receiver
-  as the separate receiving station.
-- Update provenance to upstream Signal themes #685, scrolling/resizing #686,
-  and native FX.25 #687. All twelve selected changes remain included.
+- Match the tracker GPS freshness option to the other beacon editor fields:
+  use the standard checkbox, label typography and shared form hint styling.
+  The option label wraps on narrow screens. Behavior and defaults are unchanged.
+- Include the 1200-baud FX.25 airtime comparison documentation, with explicit
+  frame sizes, timing assumptions and limits of the examples.
+- The experimental 300-baud FX.25 branch and draft PR are excluded. Native
+  FX.25 support in this release remains 1200 baud only.
+
+Retained from combined.7:
+
+- Complete Signal packet timestamps at 100% and other General display sizes,
+  with wrapping between the date and clock on narrow cards.
+- Correct APRS-IS server-filter guidance and generic documentation examples.
 
 Retained audio-meter layout:
 
@@ -89,8 +90,8 @@ Verify downloads using checksums.txt.
 
 The smaller FX.25/PTT build passed operator RF tests. Signal themes and
 scrolling/resizing have operator acceptance, and upstream PRs #685/#686/#687
-are open. The timestamp fix in this release still needs visual confirmation at
-100%, narrow widths and every General display-size setting. Native telemetry
+are open. The timestamp layout and GPS freshness styling still need visual confirmation
+at 100%, narrow widths and other General display-size settings. Native telemetry
 remains a fork draft. Physical acceptance of the updated combination remains
 pending on each architecture. No general RF performance advantage over Dire Wolf
 is claimed.

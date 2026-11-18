@@ -13,8 +13,8 @@ Base: upstream/main `bde16a1752ef96e8907aea9dc18c698e3e96a9d7`.
 | #676 independent serial RTS/DTR PTT | d1e94fc447bce0890b7b0c80c36da385946b0efd |
 | #680 source-attributed TX outcomes | d23d0af989656eb213a0c76d57728c219fa6488d |
 | #682 KISS interface display names | 26f24b3fa7f837fe4d7115dfcc2f3a5de4f4c07f |
-| #684 tracker GPS freshness suppression | a871b0e4cf239d49538589df773252f71a53dc7e |
-| #687 native 1200-baud FX.25 | c2f6294d18b04ed41bee4690eaa768208faeb0a9 |
+| #684 tracker GPS freshness suppression | 3cc601fb8859a5597ebd328ace6a8fc95a5a55e0 |
+| #687 native 1200-baud FX.25 | f66fe3a86f2ab85650d08ee020da06f4dc698892 |
 | #685 Signal Light/Dark themes, responsive Dashboard and complete timestamps | e2edbc0359ce009d83b229d53def6c73d63e8d61 |
 | #686 edge-assisted packet-log resizing and pinned desktop navigation | 02550a3f7d3a94629bc01375cecab9086ecc2939 |
 | Fork #7 native station-wide T# telemetry | 06d7691ba511b57e199c19a2eec53c9667254ffd |
@@ -24,8 +24,12 @@ Base: upstream/main `bde16a1752ef96e8907aea9dc18c698e3e96a9d7`.
 This is twelve selected changes: nine upstream PRs from this fork, native
 telemetry in fork draft #7, and selected upstream PRs #657 and #617. The
 `ci/tracker-fresh-gps` test branch and `fix/digipeater-inherit-first-save`
-are excluded. Digipeating retains upstream's explicit enablement behavior.
+are excluded. The experimental 300-baud FX.25 branch and draft PR are also
+excluded; native FX.25 remains limited to 1200 baud in this build.
+Digipeating retains upstream's explicit enablement behavior.
 
+The GPS freshness option uses the beacon editor's standard checkbox and
+form hint styling, with a wrapping label for narrow screens.
 The updated feature heads include operator documentation, including the
 1200-baud-only FX.25 limitation. #676 retains stable Linux
 `/dev/serial/by-id/` choices and FX.25 retains unconditional badge wrapping.
