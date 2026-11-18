@@ -39,6 +39,12 @@ PTT. It does not rely solely on having copied samples into an output callback.
 Its configured TXDELAY/TXTAIL generate pre/postamble flags; they are not a
 substitute for draining pending playback.
 
+Dire Wolf's source comments acknowledge historically inconsistent waiting
+behavior from the underlying drain operation. Its additional calculated-
+airtime check is a backstop for a drain that returns early. Graywolf retains
+that duration safeguard too, while the CPAL presentation deadline accounts
+for the device latency missing from its former callback-consumption check.
+
 Graywolf retains its continuously running CPAL stream, which emits silence
 between submissions. Draining/stopping ALSA directly is not available through
 CPAL's cross-platform interface. Instead, CPAL supplies an output callback
@@ -76,9 +82,9 @@ the unkey decision; it does not optimize that initial silence or change device
 buffer negotiation, gains, channel access, FX.25 encoding, or dashboard LEDs.
 
 Playback timestamps are backend predictions, not physical instrumentation.
-Remaining verification is on the affected PCH/radio with normal 100 ms tail,
-and low-latency USB playback. Keep the working 1000 ms workaround until the
-updated binary pair is deliberately installed for that test.
+Affected PCH/radio results at the normal 100 ms tail are recorded below.
+Real low-latency USB playback validation remains pending. The old-binary
+1000 ms tail is a documented rollback workaround, rather than a new default.
 
 ## Regression coverage
 
@@ -119,7 +125,7 @@ records, not independent RF measurements; no match does not independently
 prove that each individual transmission was physically emitted and clipped.
 The corresponding old-binary AX.25 control with 1000 ms tail is described
 below.
-Neither this new code nor a release containing it has been deployed.
+At that stage neither the new code nor a release containing it had been deployed.
 
 ### Ordinary AX.25 control with 1000 ms tail
 
@@ -140,6 +146,45 @@ controls on both stations are unchanged from the preceding trial.
 These differing observation windows are compared as reception outcomes per
 recorded TX, not as traffic rates. The control strengthens the evidence for
 a format-independent playback-completion fault: the longer tail restores
-ordinary AX.25 reception as well as complete FX.25 validation. The new code
-still needs hardware validation with the normal 100 ms tail, separately for
-ordinary AX.25 and FX.25, before claiming the fix is proven on the radio.
+ordinary AX.25 reception as well as complete FX.25 validation. Patched-binary
+hardware trials with the normal 100 ms tail follow below.
+
+## Patched PCH transmitter acceptance at 100 ms tail
+
+The transmitting station installed paired c.10 components from source commit
+34d36ddd3359025c949e33813e9269d41f9ceba5. Its live startup log confirms the
+c.10 modem. The receiving station stayed on combined.9 / 4819b73c throughout,
+isolating the transmitter update. The operator confirmed 100 ms tail for
+both trials; the original collector does not independently export timing.
+Captured hardware mixer controls and software audio gains stayed unchanged.
+
+| Patched transmitter trial | Recorded TX | Matching RF RX | Validated FX.25 | Unmatched |
+| --- | ---: | ---: | ---: | ---: |
+| Ordinary AX.25, approximately 12:57–13:09 EST | 10 | 9 | Not applicable | 1 |
+| FX.25 Auto, approximately 13:17–13:41 EST | 18 | 18 | 18 | 0 |
+
+Each match requires the full raw AX.25 bytes and full displayed header/path/
+payload, at the other station's RF input within 15 seconds of the TX record.
+The ordinary AX.25 trial's unmatched TX occurred at 13:02:37.885; the receiver
+had queued its own digipeat about 77 ms earlier. That is consistent with
+half-duplex overlap/contention, not a proven measurement of the RF/PTT edges.
+
+All 18 FX.25 receptions validated tag 0x06 (128 data bytes, 32 parity bytes),
+with zero Reed–Solomon symbol corrections. They include isolated position
+beacons, digipeated traffic and third-party message packets. There are no
+captured drain-timeout, sink-submit or PTT-unkey errors. Different test-window
+durations are not compared as traffic rates.
+
+These results support the playback-completion fix on the affected large-buffer
+Linux PCH/radio installation in both ordinary AX.25 and FX.25 at 100 ms tail.
+They do not establish perfect RF delivery, direct waveform timing, every
+FX.25 mode, or universal compatibility with untested audio backends.
+
+### Low-latency device scope
+
+The completion wait follows each device's reported playback timing rather
+than imposing a fixed extra second. Unit tests cover short and large pending
+playback intervals and preserve the configured tail. This design is intended
+to benefit devices with excessive buffering while avoiding unnecessary fixed
+padding on low-latency devices. Real USB-transmitter acceptance is still pending;
+do not claim an observed absence of regressions on that device until tested.
