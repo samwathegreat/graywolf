@@ -1,18 +1,24 @@
-# Combined testing 0.14.14-combined.8 for Linux ARM64 and x86_64
+# Combined testing 0.14.14-combined.9 for Linux ARM64 and x86_64
 
 This is a testing release from samwathegreat/graywolf, not an official
-upstream Graywolf release. It retains all twelve selected changes from combined.7.
+upstream Graywolf release. It retains all twelve selected changes from combined.8.
 Published as Latest for existing custom-repository installers.
 
 New in this build:
 
-- Match the tracker GPS freshness option to the other beacon editor fields:
-  use the standard checkbox, label typography and shared form hint styling.
-  The option label wraps on narrow screens. Behavior and defaults are unchanged.
-- Include the 1200-baud FX.25 airtime comparison documentation, with explicit
-  frame sizes, timing assumptions and limits of the examples.
-- The experimental 300-baud FX.25 branch and draft PR are excluded. Native
-  FX.25 support in this release remains 1200 baud only.
+- Beacon cards show the symbol and full label on their own top row, wrapping
+  long labels instead of truncating them beside status badges.
+- Callsign/object identity and wrapping status badges appear beneath the label.
+- The beacon grid fits narrow screens. All themes use the improved layout.
+- The beacon handbook documents the new presentation.
+
+Retained from combined.8:
+
+- Consistent tracker GPS freshness checkbox, label and hint styling, including
+  narrow-screen wrapping, with unchanged behavior and defaults.
+- 1200-baud FX.25 airtime documentation with timing assumptions and limitations.
+- The experimental 300-baud FX.25 branch and draft PR remain excluded.
+  Native FX.25 in this build remains limited to 1200 baud.
 
 Retained from combined.7:
 
@@ -90,8 +96,9 @@ Verify downloads using checksums.txt.
 
 The smaller FX.25/PTT build passed operator RF tests. Signal themes and
 scrolling/resizing have operator acceptance, and upstream PRs #685/#686/#687
-are open. The timestamp layout and GPS freshness styling still need visual confirmation
-at 100%, narrow widths and other General display-size settings. Native telemetry
+are open. The timestamp layout, GPS freshness styling and wrapping beacon-card layout
+still need visual confirmation at 100%, narrow widths and other General
+display-size settings. Native telemetry
 remains a fork draft. Physical acceptance of the updated combination remains
 pending on each architecture. No general RF performance advantage over Dire Wolf
 is claimed.

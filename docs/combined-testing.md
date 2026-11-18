@@ -9,7 +9,7 @@ Base: upstream/main `bde16a1752ef96e8907aea9dc18c698e3e96a9d7`.
 | Change | Exact source head |
 |---|---|
 | #674 exact-source APRS-IS-to-RF allow rules | 1dbf3e17d82091d2505498caf195b0a05c5c1432 |
-| #675 beacon labels, including symbol retention | 04fae68220c2c655c754c828c03ab55cc794a9ff |
+| #675 wrapping beacon labels, including symbol retention | f0da7b24160db4dc65737008c9eb56f8008f7198 |
 | #676 independent serial RTS/DTR PTT | d1e94fc447bce0890b7b0c80c36da385946b0efd |
 | #680 source-attributed TX outcomes | d23d0af989656eb213a0c76d57728c219fa6488d |
 | #682 KISS interface display names | 26f24b3fa7f837fe4d7115dfcc2f3a5de4f4c07f |
@@ -28,6 +28,10 @@ are excluded. The experimental 300-baud FX.25 branch and draft PR are also
 excluded; native FX.25 remains limited to 1200 baud in this build.
 Digipeating retains upstream's explicit enablement behavior.
 
+Beacon cards give the symbol and full label their own wrapping top row,
+with callsign/object identity and wrapping status badges underneath.
+The grid fits narrow screens without a fixed minimum overflow. These
+changes apply to all themes, including existing themes.
 The GPS freshness option uses the beacon editor's standard checkbox and
 form hint styling, with a wrapping label for narrow screens.
 The updated feature heads include operator documentation, including the
