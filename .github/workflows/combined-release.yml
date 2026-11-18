@@ -31,7 +31,7 @@ jobs:
           git config user.name samwathegreat
           git config user.email samwathegreat@users.noreply.github.com
           heads=$(sed -nE 's/.*\| ([0-9a-f]{40}) \|/\1/p' docs/combined-testing.md)
-          test "$(printf '%s\n' "$heads" | wc -l)" -eq 12
+          test "$(printf '%s\n' "$heads" | wc -l)" -eq 13
           while read -r head; do
             if ! git merge-base --is-ancestor "$head" HEAD; then
               git fetch origin "$head"
@@ -129,6 +129,8 @@ jobs:
           cargo test --release --locked --lib fx25
           cargo test --release --locked --lib il2p
           cargo test --release --locked --lib ptt
+          cargo test --release --locked --lib audio::playback
+          cargo test --release --locked --lib output_presentation_uses_last_mono_sample_position_in_stereo_all_formats
           cargo build --release --locked --bin graywolf-modem --example fx25_audio
           bash scripts/test_serial_ptt_sim.sh
       - name: Independent pinned Dire Wolf interoperability

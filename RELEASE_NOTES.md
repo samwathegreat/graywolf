@@ -1,10 +1,33 @@
-# Combined testing 0.14.14-combined.9 for Linux ARM64 and x86_64
+# Graywolf 0.14.14-c.10 for Linux ARM64 and x86_64
 
-This is a testing release from samwathegreat/graywolf, not an official
-upstream Graywolf release. It retains all twelve selected changes from combined.8.
-Published as Latest for existing custom-repository installers.
+This fork testing release retains all twelve selected changes from combined.9
+and adds the separately maintained TX playback-completion fix. It is published
+as Latest for custom-repository installers; hardware acceptance remains pending.
+Both application and modem use the shorter `0.14.14-c.10` version and the same
+source commit. This is not an official upstream Graywolf release.
 
 New in this build:
+
+- Wait for CPAL's predicted final-sample playback time before releasing PTT,
+  rather than treating callback-consumed samples as physically played.
+- Preserve the configured preamble and tail; no fixed extra tail is imposed.
+  Low-latency devices wait for their own reported playback completion.
+- Bound failed completion waits and discard timed-out output streams.
+- Regression coverage includes large output latency, stereo sample positions,
+  idle callbacks, repeated transmissions and PTT release on timeout.
+- Anonymized old-binary controls: FX.25 validation recovered with longer tail;
+  ordinary AX.25 went from 0/14 matched RF receptions at 100 ms tail to 10/10
+  at 1000 ms. These establish the symptom/workaround, not acceptance of this fix.
+  See docs/tx-playback-completion.md for methods, limitations and full evidence.
+- Validate this build in both AX.25 and FX.25 at 100 ms tail before folding
+  the fix into the standalone FX.25 PR. No automatic RF test is performed.
+
+The `c.10` naming change sorts below `combined.9` in Debian version comparison.
+Conventional Debian package tools may require an explicit downgrade allowance
+when moving from the old naming convention; verify the intended release and
+source commit. Existing reviewed paired-binary deployment remains available.
+
+Retained from combined.9:
 
 - Beacon cards show the symbol and full label on their own top row, wrapping
   long labels instead of truncating them beside status badges.

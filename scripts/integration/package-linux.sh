@@ -2,7 +2,7 @@
 # Package already-built paired Linux binaries. Does not install or start them.
 set -euo pipefail
 version=$(cat INTEGRATION_VERSION)
-[[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+-combined\.[0-9]+$ ]]
+[[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(combined|c)\.[0-9]+$ ]]
 arch=${1:?usage: package-linux.sh arm64\|amd64 BINARY_DIRECTORY OUTPUT_DIRECTORY}
 bin_dir=${2:?usage: package-linux.sh arm64\|amd64 BINARY_DIRECTORY OUTPUT_DIRECTORY}
 out_dir=${3:?usage: package-linux.sh arm64\|amd64 BINARY_DIRECTORY OUTPUT_DIRECTORY}
@@ -29,7 +29,7 @@ mkdir -p "$stage/archive" "$stage/deb/DEBIAN" "$stage/deb/usr/bin" \
   "$stage/deb/usr/lib/systemd/system" "$stage/deb/etc/udev/rules.d" \
   "$stage/deb/usr/share/doc/graywolf"
 install -m 0755 "$bin_dir/graywolf" "$bin_dir/graywolf-modem" "$stage/archive/"
-cp LICENSE README.md RELEASE_NOTES.md docs/combined-testing.md "$stage/archive/"
+cp LICENSE README.md RELEASE_NOTES.md docs/combined-testing.md docs/tx-playback-completion.md "$stage/archive/"
 {
   echo 'Graywolf combined testing build; not an official upstream release'
   echo "Version: $version"
@@ -44,7 +44,7 @@ cp "$stage/archive/BUILD.txt" "$out_dir/BUILD-${arch}.txt"
 cp RELEASE_NOTES.md "$out_dir/RELEASE_NOTES.md"
 tar --sort=name --mtime="@$epoch" --owner=0 --group=0 --numeric-owner \
   -C "$stage/archive" -cf - BUILD.txt LICENSE README.md RELEASE_NOTES.md \
-  combined-testing.md graywolf graywolf-modem | gzip -n > "$out_dir/$archive"
+  combined-testing.md tx-playback-completion.md graywolf graywolf-modem | gzip -n > "$out_dir/$archive"
 git archive --format=tar --prefix="graywolf-${version}/" HEAD | gzip -n > "$out_dir/$source"
 install -m 0755 "$bin_dir/graywolf" "$bin_dir/graywolf-modem" "$stage/deb/usr/bin/"
 install -m 0644 packaging/systemd/graywolf.service "$stage/deb/usr/lib/systemd/system/"
@@ -52,7 +52,7 @@ install -m 0644 packaging/udev/99-graywolf-cm108.rules "$stage/deb/etc/udev/rule
 install -m 0755 packaging/scripts/postinstall.sh "$stage/deb/DEBIAN/postinst"
 install -m 0755 packaging/scripts/preremove.sh "$stage/deb/DEBIAN/prerm"
 printf '/etc/udev/rules.d/99-graywolf-cm108.rules\n' > "$stage/deb/DEBIAN/conffiles"
-cp LICENSE RELEASE_NOTES.md docs/combined-testing.md "$stage/archive/BUILD.txt" "$stage/deb/usr/share/doc/graywolf/"
+cp LICENSE RELEASE_NOTES.md docs/combined-testing.md docs/tx-playback-completion.md "$stage/archive/BUILD.txt" "$stage/deb/usr/share/doc/graywolf/"
 cat > "$stage/deb/DEBIAN/control" <<CONTROL
 Package: graywolf
 Version: $version

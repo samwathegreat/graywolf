@@ -20,9 +20,12 @@ Base: upstream/main `bde16a1752ef96e8907aea9dc18c698e3e96a9d7`.
 | Fork #7 native station-wide T# telemetry | 06d7691ba511b57e199c19a2eec53c9667254ffd |
 | Upstream #657 preserve repeated RF path markers | 0883688836bf852ae166b16382ef239bbbe499c2 |
 | Upstream #617 beacon comment-command UI | 90e7cda3ce987d7fd8ca1dee6c4a5fc7bd100160 |
+| TX playback completion fix; separate validation branch | 96a6b97e0055555a7cadb143802be8564a040dc1 |
 
-This is twelve selected changes: nine upstream PRs from this fork, native
-telemetry in fork draft #7, and selected upstream PRs #657 and #617. The
+This retains the same twelve selected changes: nine upstream PRs from this fork,
+native telemetry in fork draft #7, and selected upstream PRs #657 and #617.
+A thirteenth pinned head adds the separately maintained TX playback-completion
+fix, pending operator validation before incorporation into #687. The
 `ci/tracker-fresh-gps` test branch and `fix/digipeater-inherit-first-save`
 are excluded. The experimental 300-baud FX.25 branch and draft PR are also
 excluded; native FX.25 remains limited to 1200 baud in this build.
@@ -92,7 +95,8 @@ schema. Protobuf regeneration must reproduce the merged IPC schema.
 
 ## Fork release
 
-`INTEGRATION_VERSION` selects a distinct combined-test version. The upstream
+`INTEGRATION_VERSION` selects a distinct combined-test version, now using the
+short form `0.14.14-c.10` instead of `0.14.14-combined.9`. The upstream
 VERSION and in-app release-note history are not bumped. The embedded note
 parser accepts only stable x.y.z entries; combined-test notes instead ship in
 RELEASE_NOTES.md and on the fork release. Both binaries are stamped with
@@ -168,3 +172,15 @@ operator acceptance.
 Use the sending station's actual position; initiate each RF packet manually.
 No unattended RF test is included. Re-image the disposable station afterward
 or reinstall the previous known-good paired package before restoring service.
+
+## c.10 playback-completion validation
+
+The original twelve feature heads above are unchanged. The added fix accounts
+for output-device playback latency before releasing PTT, while preserving the
+generated preamble and tail. See [implementation and anonymized field evidence](tx-playback-completion.md).
+On small-buffer devices the added wait follows their small reported latency;
+there is no fixed one-second padding or audio-level change. Backend timestamp
+accuracy still needs operator validation. Test both ordinary AX.25 and FX.25
+with 100 ms tail, holding gains, preamble, channel and receiving station fixed.
+The old-binary 1000 ms tail remains a rollback workaround. The LED discussion
+is deferred; this build does not change its polling or display behavior.
