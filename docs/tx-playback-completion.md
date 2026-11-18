@@ -117,6 +117,29 @@ TX completion defect: without the FX.25 block after the inner HDLC frame,
 ordinary AX.25 reception disappears in this sample. These are software TX
 records, not independent RF measurements; no match does not independently
 prove that each individual transmission was physically emitted and clipped.
-A corresponding old-binary AX.25 trial with 1000 ms tail remains pending and
-will test whether the workaround restores ordinary AX.25 reception too.
+The corresponding old-binary AX.25 control with 1000 ms tail is described
+below.
 Neither this new code nor a release containing it has been deployed.
+
+### Ordinary AX.25 control with 1000 ms tail
+
+The operator increased only the tail to 1000 ms just before 12:15 EST,
+leaving FX.25 transmit disabled on the same old binary. Paired captures
+collected at approximately 12:26–12:27 retain all ten TX records from
+12:15:05 through 12:26:49. Every record explicitly identifies ordinary
+AX.25 with `fx25_requested=false`; every one has a full-byte/path/payload
+RF match at the receiving station within 15 seconds. All ten receptions
+are ordinary AX.25, as expected. Captured software gains and hardware mixer
+controls on both stations are unchanged from the preceding trial.
+
+| Old-binary ordinary AX.25 condition | TX records | Matching RF RX | Unmatched |
+| --- | ---: | ---: | ---: |
+| 100 ms tail, approximately 11:50–12:07 EST | 14 | 0 | 14 |
+| 1000 ms tail, approximately 12:15–12:27 EST | 10 | 10 | 0 |
+
+These differing observation windows are compared as reception outcomes per
+recorded TX, not as traffic rates. The control strengthens the evidence for
+a format-independent playback-completion fault: the longer tail restores
+ordinary AX.25 reception as well as complete FX.25 validation. The new code
+still needs hardware validation with the normal 100 ms tail, separately for
+ordinary AX.25 and FX.25, before claiming the fix is proven on the radio.
