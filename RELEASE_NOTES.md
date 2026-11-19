@@ -1,28 +1,39 @@
-# Graywolf 0.14.14-c.10 for Linux ARM64 and x86_64
+# Graywolf 0.14.14-c.11 for Linux ARM64 and x86_64
 
-This fork testing release retains all twelve selected changes from combined.9
-and adds the separately maintained TX playback-completion fix. It is published
-as Latest for custom-repository installers; hardware acceptance remains pending.
-Both application and modem use the shorter `0.14.14-c.10` version and the same
-source commit. This is not an official upstream Graywolf release.
+This fork testing release retains every selected feature and the TX
+playback-completion fix from c.10, adding the FX.25 channel configuration badge.
+Both application and modem use version `0.14.14-c.11` and the same source commit.
+It is published as Latest for custom-repository installers after both Linux
+architectures pass the existing release checks. This is not an official
+upstream Graywolf release.
 
 New in this build:
 
-- Wait for CPAL's predicted final-sample playback time before releasing PTT,
-  rather than treating callback-consumed samples as physically played.
-- Preserve the configured preamble and tail; no fixed extra tail is imposed.
-  Low-latency devices wait for their own reported playback completion.
-- Bound failed completion waits and discard timed-out output streams.
-- Regression coverage includes large output latency, stereo sample positions,
-  idle callbacks, repeated transmissions and PTT release on timeout.
-- Anonymized old-binary controls: FX.25 validation recovered with longer tail;
-  ordinary AX.25 went from 0/14 matched RF receptions at 100 ms tail to 10/10
-  at 1000 ms. These establish the symptom/workaround, not acceptance of this fix.
-  See docs/tx-playback-completion.md for methods, limitations and full evidence.
-- Validate this build in both AX.25 and FX.25 at 100 ms tail before folding
-  the fix into the standalone FX.25 PR. No automatic RF test is performed.
+- Show a blue FX.25 badge when native channel transmit encoding is configured.
+  Use the same shared badge component, size and spacing as adjacent badges.
+- Wrap channel headers and badge groups when space is limited.
+- Explain that the badge identifies saved configuration, including on disabled
+  channels. It is not a live transmission/reception indicator; individual
+  oversized frames can still use ordinary AX.25.
+- Update the FX.25 implementation notes and Channels handbook.
 
-The `c.10` naming change sorts below `combined.9` in Debian version comparison.
+The standalone frontend build, 551 existing frontend tests and six server-rendered
+channel visibility cases passed. Visual layout acceptance on the appliances
+remains pending. No audio levels, modem behavior, LED behavior, transmission
+schedules or station settings are changed by this addition.
+
+Retained from c.10:
+
+- Wait for CPAL's predicted final-sample playback time before releasing PTT.
+  Preserve the configured preamble and tail without fixed extra padding.
+- Bound failed completion waits and discard timed-out output streams.
+- Preserve the same original twelve feature selections plus the independently
+  submitted playback-completion fix (upstream PR #689).
+- Operator AX.25 and FX.25 field acceptance at 100 ms tail is documented with
+  generic station identifiers in docs/tx-playback-completion.md on the fix PR.
+  This badge update does not change that timing implementation.
+
+The `c.N` naming convention sorts below `combined.N` in Debian version comparison.
 Conventional Debian package tools may require an explicit downgrade allowance
 when moving from the old naming convention; verify the intended release and
 source commit. Existing reviewed paired-binary deployment remains available.

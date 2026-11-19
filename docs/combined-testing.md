@@ -14,7 +14,7 @@ Base: upstream/main `bde16a1752ef96e8907aea9dc18c698e3e96a9d7`.
 | #680 source-attributed TX outcomes | d23d0af989656eb213a0c76d57728c219fa6488d |
 | #682 KISS interface display names | 26f24b3fa7f837fe4d7115dfcc2f3a5de4f4c07f |
 | #684 tracker GPS freshness suppression | 3cc601fb8859a5597ebd328ace6a8fc95a5a55e0 |
-| #687 native 1200-baud FX.25 | f66fe3a86f2ab85650d08ee020da06f4dc698892 |
+| #687 native 1200-baud FX.25 | 791863dde0e978437e8f24c9cf41293577c27a8e |
 | #685 Signal Light/Dark themes, responsive Dashboard and complete timestamps | e2edbc0359ce009d83b229d53def6c73d63e8d61 |
 | #686 edge-assisted packet-log resizing and pinned desktop navigation | 02550a3f7d3a94629bc01375cecab9086ecc2939 |
 | Fork #7 native station-wide T# telemetry | 06d7691ba511b57e199c19a2eec53c9667254ffd |
@@ -25,7 +25,7 @@ Base: upstream/main `bde16a1752ef96e8907aea9dc18c698e3e96a9d7`.
 This retains the same twelve selected changes: nine upstream PRs from this fork,
 native telemetry in fork draft #7, and selected upstream PRs #657 and #617.
 A thirteenth pinned head adds the separately maintained TX playback-completion
-fix, pending operator validation before incorporation into #687. The
+fix, now submitted independently as upstream PR #689. The
 `ci/tracker-fresh-gps` test branch and `fix/digipeater-inherit-first-save`
 are excluded. The experimental 300-baud FX.25 branch and draft PR are also
 excluded; native FX.25 remains limited to 1200 baud in this build.
@@ -96,7 +96,7 @@ schema. Protobuf regeneration must reproduce the merged IPC schema.
 ## Fork release
 
 `INTEGRATION_VERSION` selects a distinct combined-test version, now using the
-short form `0.14.14-c.10` instead of `0.14.14-combined.9`. The upstream
+short form `0.14.14-c.11` instead of `0.14.14-combined.9`. The upstream
 VERSION and in-app release-note history are not bumped. The embedded note
 parser accepts only stable x.y.z entries; combined-test notes instead ship in
 RELEASE_NOTES.md and on the fork release. Both binaries are stamped with
@@ -184,3 +184,21 @@ accuracy still needs operator validation. Test both ordinary AX.25 and FX.25
 with 100 ms tail, holding gains, preamble, channel and receiving station fixed.
 The old-binary 1000 ms tail remains a rollback workaround. The LED discussion
 is deferred; this build does not change its polling or display behavior.
+
+## c.11 channel configuration badge
+
+c.11 retains all thirteen selected changes from c.10 and advances only the
+FX.25 feature head to include its channel-card configuration badge. The blue
+FX.25 badge uses the shared info variant, existing sizing and spacing. Headers
+and badge groups wrap on narrow cards. It identifies saved native transmit
+configuration, including on a disabled channel; it does not indicate current
+PTT, verified reception or the encoding of every packet. The packet log remains
+the source of per-packet encoding information. LED behavior, gains, playback
+timing, beacon schedules and all other feature heads are unchanged.
+
+The standalone badge frontend build and 551 existing frontend tests passed.
+Server rendering confirmed visibility for enabled and disabled native TX
+channels, and absence with FX.25 off or missing, RX-only and KISS-only channels.
+Visual width/theme acceptance remains for the installed build; the local
+browser could not launch in the development environment. The release workflow
+performs its full existing checks on both ARM64 and amd64 before publication.
