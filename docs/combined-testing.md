@@ -14,10 +14,10 @@ Base: upstream/main `bde16a1752ef96e8907aea9dc18c698e3e96a9d7`.
 | #680 source-attributed TX outcomes | d23d0af989656eb213a0c76d57728c219fa6488d |
 | #682 KISS interface display names | 26f24b3fa7f837fe4d7115dfcc2f3a5de4f4c07f |
 | #684 tracker GPS freshness suppression | 3cc601fb8859a5597ebd328ace6a8fc95a5a55e0 |
-| #687 native 1200-baud FX.25 | 791863dde0e978437e8f24c9cf41293577c27a8e |
+| #687 native 1200-baud FX.25 | bfd3df7405183e06502976e1527c9194e93ee1b7 |
 | #685 Signal Light/Dark themes, responsive Dashboard and complete timestamps | e2edbc0359ce009d83b229d53def6c73d63e8d61 |
 | #686 edge-assisted packet-log resizing and pinned desktop navigation | 02550a3f7d3a94629bc01375cecab9086ecc2939 |
-| Fork #7 native station-wide T# telemetry | 06d7691ba511b57e199c19a2eec53c9667254ffd |
+| Fork #7 native station-wide T# telemetry | c393fdf3d4a95b49b2b84371e44befeca1dd4868 |
 | Upstream #657 preserve repeated RF path markers | 0883688836bf852ae166b16382ef239bbbe499c2 |
 | Upstream #617 beacon comment-command UI | 90e7cda3ce987d7fd8ca1dee6c4a5fc7bd100160 |
 | TX playback completion fix; separate validation branch | 96a6b97e0055555a7cadb143802be8564a040dc1 |
@@ -96,7 +96,7 @@ schema. Protobuf regeneration must reproduce the merged IPC schema.
 ## Fork release
 
 `INTEGRATION_VERSION` selects a distinct combined-test version, now using the
-short form `0.14.14-c.11` instead of `0.14.14-combined.9`. The upstream
+short form `0.14.14-c.12` instead of `0.14.14-combined.9`. The upstream
 VERSION and in-app release-note history are not bumped. The embedded note
 parser accepts only stable x.y.z entries; combined-test notes instead ship in
 RELEASE_NOTES.md and on the fork release. Both binaries are stamped with
@@ -202,3 +202,19 @@ channels, and absence with FX.25 off or missing, RX-only and KISS-only channels.
 Visual width/theme acceptance remains for the installed build; the local
 browser could not launch in the development environment. The release workflow
 performs its full existing checks on both ARM64 and amd64 before publication.
+
+## c.12 telemetry presentation update
+
+The same thirteen approved feature selections are retained. The FX.25 head
+adds the approved Auto wording: frame-length-based parity selection is not
+adaptive link-quality selection. The telemetry head adds explicit local TX IS
+and TX RF origin labels, standard APRS-IS upload annotation and synchronized
+Swagger/handbook/client descriptions. Received telemetry stays RX; packet
+payload text and station callsigns never determine direction. Existing Signal
+packet-flow classification recognizes both outgoing routes.
+
+The only merge conflict was adjacent appended packet-column regression tests;
+both the FX.25 encoding tests and new telemetry origin tests are retained.
+A combined flow regression covers data and PARM/UNIT/EQNS definitions across
+RF/IS transmit and receive. No levels, timings, decoder selection, schedules,
+RF permissions or installed station settings are changed by this update.

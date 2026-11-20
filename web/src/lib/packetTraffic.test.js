@@ -82,3 +82,13 @@ test('Signal interface text and primary buttons meet contrast targets', () => {
   }
  }
 });
+
+
+test('native telemetry upload and RF contexts retain explicit flow labels', () => {
+ for(const display of ['TEST1>APGRWO:T#001,001,002,003,004,005,00000000', 'TEST1>APGRWO::TEST1    :PARM.Rx,Digi,Tx,RF2IS,IS2RF', 'TEST1>APGRWO::TEST1    :UNIT.Packets', 'TEST1>APGRWO::TEST1    :EQNS.0,1,0']) {
+  assert.equal(packetFlow({direction:'IS',source:'telemetry',notes:'aprs-is',display}).id,'tx-is');
+  assert.equal(packetFlow({direction:'TX',source:'telemetry',display}).id,'tx-rf');
+  assert.equal(packetFlow({direction:'RX',source:'modem',display}).id,'rx-rf');
+  assert.equal(packetFlow({direction:'IS',source:'igate-is',notes:'is-rx',display}).id,'rx-is');
+ }
+});

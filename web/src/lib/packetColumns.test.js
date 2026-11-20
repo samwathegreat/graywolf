@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { audioLevel, displaySegments } from './packetColumns.js';
+import { audioLevel, displaySegments, originTag } from './packetColumns.js';
 
 test('audioLevel: null when the packet carries no audio_level', () => {
   assert.equal(audioLevel({}), null);
@@ -126,4 +126,14 @@ test('TX encoding comes from the native report, including explicit AX.25 fallbac
   const fallback=packetEncoding({...tx,tx_encoding:{encoding:'ax25',fx25_requested:true,fallback_reason:'frame_too_large'}});
   assert.equal(fallback.label,'AX.25 fallback'); assert.ok(fallback.fallback); assert.equal(fallback.fx25,false);
   assert.equal(packetEncoding({...tx,tx_encoding:{encoding:'ax25'}}).label,'AX.25');
+});
+
+test('telemetry origin uses event direction, not telemetry-looking payloads', () => {
+  for (const info of ['T#001,001,002,003,004,005,00000000', ':TEST1-10 :PARM.Rx,Digi,Tx,RF2IS,IS2RF', ':TEST1-10 :UNIT.Packets,Packets,Packets,Packets,Packets', ':TEST1-10 :EQNS.0,1,0,0,1,0,0,1,0,0,1,0,0,1,0']) {
+    assert.deepEqual(originTag({ direction: 'IS', source: 'telemetry', notes: 'aprs-is', display: info }), { label: 'Telemetry TX IS', cls: 'bcn' });
+    assert.deepEqual(originTag({ direction: 'TX', source: 'telemetry', display: info }), { label: 'Telemetry TX RF', cls: 'bcn' });
+    assert.equal(originTag({ direction: 'RX', source: 'modem', display: info }), null);
+  }
+  assert.deepEqual(originTag({ source: 'telemetry' }), { label: 'Telemetry', cls: 'bcn' });
+  assert.deepEqual(originTag({ direction: 'IS', source: 'igate-is', display: 'T#001' }), { label: 'iGate IS RX', cls: 'igate' });
 });

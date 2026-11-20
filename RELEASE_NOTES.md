@@ -1,26 +1,35 @@
-# Graywolf 0.14.14-c.11 for Linux ARM64 and x86_64
+# Graywolf 0.14.14-c.12 for Linux ARM64 and x86_64
 
-This fork testing release retains every selected feature and the TX
-playback-completion fix from c.10, adding the FX.25 channel configuration badge.
-Both application and modem use version `0.14.14-c.11` and the same source commit.
+This fork testing release retains every selected c.11 feature, including the TX
+playback-completion fix and FX.25 channel configuration badge, while updating
+telemetry traffic presentation and FX.25 Auto explanatory wording.
+Both application and modem use version `0.14.14-c.12` and the same source commit.
 It is published as Latest for custom-repository installers after both Linux
 architectures pass the existing release checks. This is not an official
 upstream Graywolf release.
 
-New in this build:
+New in c.12:
 
-- Show a blue FX.25 badge when native channel transmit encoding is configured.
-  Use the same shared badge component, size and spacing as adjacent badges.
-- Wrap channel headers and badge groups when space is limited.
-- Explain that the badge identifies saved configuration, including on disabled
-  channels. It is not a live transmission/reception indicator; individual
-  oversized frames can still use ordinary AX.25.
-- Update the FX.25 implementation notes and Channels handbook.
+- Identify locally generated telemetry data and definitions as TX IS or TX RF
+  from their event context. APRS-IS submissions use the standard route annotation;
+  received telemetry is still labeled as reception. Failed uploads do not create
+  successful-send entries. Valid uploads previously could appear Unspecified in
+  the enhanced packet-flow view.
+- Synchronize generated API schema, handbook copies and TypeScript client with
+  the telemetry source annotation.
+- Clarify FX.25 Auto wording: parity selection is based on protected frame length,
+  not measured link quality. No encoding behavior changes.
+- Preserve the c.11 blue configured FX.25 badge and wrapping channel headers,
+  with the same shared badge size/spacing and disabled-channel semantics.
 
-The standalone frontend build, 551 existing frontend tests and six server-rendered
-channel visibility cases passed. Visual layout acceptance on the appliances
-remains pending. No audio levels, modem behavior, LED behavior, transmission
-schedules or station settings are changed by this addition.
+Local combined-source preparation passed 585 web tests, API/schema drift checks,
+API ID lint, TypeScript checks, the production web build and focused Go race
+regressions. All thirteen manifest heads are present.
+
+The updated standalone telemetry branch passed hosted CI, Android and armhf-t64
+validation at c393fdf. The release workflow independently checks the combined
+source on both Linux architectures before publication. Installed-build telemetry
+label acceptance remains pending; no automatic test RF is generated.
 
 Retained from c.10:
 
@@ -98,7 +107,7 @@ still rewind sequences until its persistence update is installed.
 Retained features:
 
 - Native FX.25 transmit and receive at 1200 baud, with per-packet encoding,
-  parity and repaired-symbol information. Auto is recommended when enabled;
+  parity and repaired-symbol information. Auto selects parity from frame length and remains recommended when enabled;
   oversized frames use explicitly identified ordinary AX.25 fallback.
 - Native station-wide T# activity telemetry, disabled by default, with ready-input
   ten-minute baseline, spaced definitions, delivery selection and recent status.
