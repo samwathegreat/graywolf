@@ -1,3 +1,18 @@
+# Graywolf 0.14.14-c.13 for Linux ARM64 and x86_64
+
+Retains the complete c.12 combined feature set and corrects the channel column
+for locally generated APRS-IS telemetry. IS reports and definitions display
+**APRS-IS**, rather than the configured RF delivery channel. RF telemetry retains
+its actual RF channel name. Historical IS telemetry entries also display correctly.
+New IS entries have no RF channel association; measurement scope remains the
+entire station. No modem processing, sample rates, audio levels, PTT timing or
+station settings are changed by this update.
+
+Both application and modem use version `0.14.14-c.13` and the same source commit.
+The existing workflow builds ARM64 and AMD64 DEB/tarball artifacts and publishes
+the fork release as Latest only after both architectures pass. This is not an
+official upstream Graywolf release. Installed channel-column acceptance is pending.
+
 # Graywolf 0.14.14-c.12 for Linux ARM64 and x86_64
 
 This fork testing release retains every selected c.11 feature, including the TX

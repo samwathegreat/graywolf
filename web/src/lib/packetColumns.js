@@ -193,3 +193,10 @@ export function packetEncoding(pkt) {
     parity: f.parity_bytes, corrected: count,
   };
 }
+
+// Locally generated IS telemetry has no RF delivery channel. Prefer its actual
+// transport even for older entries that retained the configured RF channel.
+export function packetChannelLabel(pkt) {
+  if (pkt.source === 'telemetry' && pkt.direction === 'IS') return 'APRS-IS';
+  return pkt.channel_name || (pkt.channel ?? '—');
+}

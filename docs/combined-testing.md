@@ -17,7 +17,7 @@ Base: upstream/main `bde16a1752ef96e8907aea9dc18c698e3e96a9d7`.
 | #687 native 1200-baud FX.25 | bfd3df7405183e06502976e1527c9194e93ee1b7 |
 | #685 Signal Light/Dark themes, responsive Dashboard and complete timestamps | e2edbc0359ce009d83b229d53def6c73d63e8d61 |
 | #686 edge-assisted packet-log resizing and pinned desktop navigation | 02550a3f7d3a94629bc01375cecab9086ecc2939 |
-| Fork #7 native station-wide T# telemetry | c393fdf3d4a95b49b2b84371e44befeca1dd4868 |
+| Fork #7 native station-wide T# telemetry | cd74081a20bc169a90b16f6fc863be6700f89e26 |
 | Upstream #657 preserve repeated RF path markers | 0883688836bf852ae166b16382ef239bbbe499c2 |
 | Upstream #617 beacon comment-command UI | 90e7cda3ce987d7fd8ca1dee6c4a5fc7bd100160 |
 | TX playback completion fix; separate validation branch | 96a6b97e0055555a7cadb143802be8564a040dc1 |
@@ -218,3 +218,16 @@ both the FX.25 encoding tests and new telemetry origin tests are retained.
 A combined flow regression covers data and PARM/UNIT/EQNS definitions across
 RF/IS transmit and receive. No levels, timings, decoder selection, schedules,
 RF permissions or installed station settings are changed by this update.
+
+## c.13 telemetry channel presentation correction
+
+Retains the same thirteen selected feature heads, updating only native telemetry.
+Local APRS-IS telemetry is logged without an RF channel association and displays
+APRS-IS in the channel column, including historical entries carrying an RF
+channel. RF telemetry retains its actual RF channel name. Measurements remain
+station-wide. No DSP, audio gain, timing, scheduling or recovery behavior changes.
+
+The integration retains both FX.25 encoding presentation and the new telemetry
+channel-label helper. Local web tests, API type checking and the production build
+are run before submission; the existing release workflow validates both Linux
+architectures before publication. Installed channel-column acceptance is pending.

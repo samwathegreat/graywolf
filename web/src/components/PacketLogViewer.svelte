@@ -23,6 +23,7 @@
     audioLevel,
     displaySegments,
     packetEncoding,
+    packetChannelLabel,
   } from '../lib/packetColumns.js';
   import PacketInspector from './PacketInspector.svelte';
   import { isSignalTheme } from '../lib/themes/registry.js';
@@ -220,7 +221,7 @@
 {/snippet}
 
 {#snippet channelCell(_value, entry)}
-  {entry.channel_name || (entry.channel ?? '—')}
+  {packetChannelLabel(entry)}
 {/snippet}
 
 {#snippet distanceCell(_value, entry)}
